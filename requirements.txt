@@ -1,0 +1,4 @@
+timm==0.5.4
+scikit-learn
+opencv-python
+mlflow

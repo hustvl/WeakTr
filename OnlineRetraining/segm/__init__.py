@@ -1,0 +1,1 @@
+from segm.datasets.coco import COCODataset

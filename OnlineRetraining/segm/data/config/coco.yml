@@ -1,0 +1,546 @@
+- color:
+  - 120
+  - 120
+  - 120
+  id: 0
+  name: background
+- color:
+  - 180
+  - 120
+  - 120
+  id: 1
+  name: person
+- color:
+  - 6
+  - 230
+  - 230
+  id: 2
+  name: bicycle
+- color:
+  - 80
+  - 50
+  - 50
+  id: 3
+  name: car
+- color:
+  - 4
+  - 200
+  - 3
+  id: 4
+  name: motorcycle
+- color:
+  - 120
+  - 120
+  - 80
+  id: 5
+  name: airplane
+- color:
+  - 140
+  - 140
+  - 140
+  id: 6
+  name: bus
+- color:
+  - 204
+  - 5
+  - 255
+  id: 7
+  name: train
+- color:
+  - 230
+  - 230
+  - 230
+  id: 8
+  name: truck
+- color:
+  - 4
+  - 250
+  - 7
+  id: 9
+  name: boat
+- color:
+  - 224
+  - 5
+  - 255
+  id: 10
+  name: traffic light
+- color:
+  - 235
+  - 255
+  - 7
+  id: 11
+  name: fire hydrant
+- color:
+  - 150
+  - 5
+  - 61
+  id: 12
+  name: street sign
+- color:
+  - 120
+  - 120
+  - 70
+  id: 13
+  name: stop sign
+- color:
+  - 8
+  - 255
+  - 51
+  id: 14
+  name: parking meter
+- color:
+  - 255
+  - 6
+  - 82
+  id: 15
+  name: bench
+- color:
+  - 143
+  - 255
+  - 140
+  id: 16
+  name: bird
+- color:
+  - 204
+  - 255
+  - 4
+  id: 17
+  name: cat
+- color:
+  - 255
+  - 51
+  - 7
+  id: 18
+  name: dog
+- color:
+  - 204
+  - 70
+  - 3
+  id: 19
+  name: horse
+- color:
+  - 0
+  - 102
+  - 200
+  id: 20
+  name: sheep
+- color:
+  - 61
+  - 230
+  - 250
+  id: 21
+  name: cow
+- color:
+  - 255
+  - 6
+  - 51
+  id: 22
+  name: elephant
+- color:
+  - 11
+  - 102
+  - 255
+  id: 23
+  name: bear
+- color:
+  - 255
+  - 7
+  - 71
+  id: 24
+  name: zebra
+- color:
+  - 255
+  - 9
+  - 224
+  id: 25
+  name: giraffe
+- color:
+  - 9
+  - 7
+  - 230
+  id: 26
+  name: hat
+- color:
+  - 220
+  - 220
+  - 220
+  id: 27
+  name: backpack
+- color:
+  - 255
+  - 9
+  - 92
+  id: 28
+  name: umbrella
+- color:
+  - 112
+  - 9
+  - 255
+  id: 29
+  name: shoe
+- color:
+  - 8
+  - 255
+  - 214
+  id: 30
+  name: eye glasses
+- color:
+  - 7
+  - 255
+  - 224
+  id: 31
+  name: handbag
+- color:
+  - 255
+  - 184
+  - 6
+  id: 32
+  name: tie
+- color:
+  - 10
+  - 255
+  - 71
+  id: 33
+  name: suitcase
+- color:
+  - 255
+  - 41
+  - 10
+  id: 34
+  name: frisbee
+- color:
+  - 7
+  - 255
+  - 255
+  id: 35
+  name: skis
+- color:
+  - 224
+  - 255
+  - 8
+  id: 36
+  name: snowboard
+- color:
+  - 102
+  - 8
+  - 255
+  id: 37
+  name: sports ball
+- color:
+  - 255
+  - 61
+  - 6
+  id: 38
+  name: kite
+- color:
+  - 255
+  - 194
+  - 7
+  id: 39
+  name: baseball bat
+- color:
+  - 255
+  - 122
+  - 8
+  id: 40
+  name: baseball glove
+- color:
+  - 0
+  - 255
+  - 20
+  id: 41
+  name: skateboard
+- color:
+  - 255
+  - 8
+  - 41
+  id: 42
+  name: surfboard
+- color:
+  - 255
+  - 5
+  - 153
+  id: 43
+  name: tennis racket
+- color:
+  - 6
+  - 51
+  - 255
+  id: 44
+  name: bottle
+- color:
+  - 235
+  - 12
+  - 255
+  id: 45
+  name: plate
+- color:
+  - 160
+  - 150
+  - 20
+  id: 46
+  name: wine glass
+- color:
+  - 0
+  - 163
+  - 255
+  id: 47
+  name: cup
+- color:
+  - 140
+  - 140
+  - 140
+  id: 48
+  name: fork
+- color:
+  - 250
+  - 10
+  - 15
+  id: 49
+  name: knife
+- color:
+  - 20
+  - 255
+  - 0
+  id: 50
+  name: spoon
+- color:
+  - 31
+  - 255
+  - 0
+  id: 51
+  name: bowl
+- color:
+  - 255
+  - 31
+  - 0
+  id: 52
+  name: banana
+- color:
+  - 255
+  - 224
+  - 0
+  id: 53
+  name: apple
+- color:
+  - 153
+  - 255
+  - 0
+  id: 54
+  name: sandwich
+- color:
+  - 0
+  - 0
+  - 255
+  id: 55
+  name: orange
+- color:
+  - 255
+  - 71
+  - 0
+  id: 56
+  name: broccoli
+- color:
+  - 0
+  - 235
+  - 255
+  id: 57
+  name: carrot
+- color:
+  - 0
+  - 173
+  - 255
+  id: 58
+  name: hot dog
+- color:
+  - 31
+  - 0
+  - 255
+  id: 59
+  name: pizza
+- color:
+  - 120
+  - 120
+  - 120
+  id: 60
+  name: donut
+- color:
+  - 180
+  - 120
+  - 120
+  id: 61
+  name: cake
+- color:
+  - 6
+  - 230
+  - 230
+  id: 62
+  name: chair
+- color:
+  - 80
+  - 50
+  - 50
+  id: 63
+  name: couch
+- color:
+  - 4
+  - 200
+  - 3
+  id: 64
+  name: potted plant
+- color:
+  - 120
+  - 120
+  - 80
+  id: 65
+  name: bed
+- color:
+  - 140
+  - 140
+  - 140
+  id: 66
+  name: mirror
+- color:
+  - 204
+  - 5
+  - 255
+  id: 67
+  name: dining table
+- color:
+  - 230
+  - 230
+  - 230
+  id: 68
+  name: window
+- color:
+  - 4
+  - 250
+  - 7
+  id: 69
+  name: desk
+- color:
+  - 224
+  - 5
+  - 255
+  id: 70
+  name: toilet
+- color:
+  - 235
+  - 255
+  - 7
+  id: 71
+  name: door
+- color:
+  - 150
+  - 5
+  - 61
+  id: 72
+  name: tv
+- color:
+  - 120
+  - 120
+  - 70
+  id: 73
+  name: laptop
+- color:
+  - 8
+  - 255
+  - 51
+  id: 74
+  name: mouse
+- color:
+  - 255
+  - 6
+  - 82
+  id: 75
+  name: remote
+- color:
+  - 143
+  - 255
+  - 140
+  id: 76
+  name: keyboard
+- color:
+  - 204
+  - 255
+  - 4
+  id: 77
+  name: cell phone
+- color:
+  - 255
+  - 51
+  - 7
+  id: 78
+  name: microwave
+- color:
+  - 204
+  - 70
+  - 3
+  id: 79
+  name: oven
+- color:
+  - 0
+  - 102
+  - 200
+  id: 80
+  name: toaster
+- color:
+  - 61
+  - 230
+  - 250
+  id: 81
+  name: sink
+- color:
+  - 255
+  - 6
+  - 51
+  id: 82
+  name: refrigerator
+- color:
+  - 11
+  - 102
+  - 255
+  id: 83
+  name: blender
+- color:
+  - 255
+  - 7
+  - 71
+  id: 84
+  name: book
+- color:
+  - 255
+  - 9
+  - 224
+  id: 85
+  name: clock
+- color:
+  - 9
+  - 7
+  - 230
+  id: 86
+  name: vase
+- color:
+  - 220
+  - 220
+  - 220
+  id: 87
+  name: scissors
+- color:
+  - 255
+  - 9
+  - 92
+  id: 88
+  name: teddy bear
+- color:
+  - 112
+  - 9
+  - 255
+  id: 89
+  name: hair drier
+- color:
+  - 8
+  - 255
+  - 214
+  id: 90
+  name: toothbrush
