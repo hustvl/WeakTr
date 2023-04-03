@@ -156,7 +156,7 @@ def get_args_parser():
     parser.add_argument('--patch-attn-refine', action='store_true')
     parser.add_argument('--visualize-cls-attn', action='store_true')
 
-    parser.add_argument('--gt-dir', type=str, default='data/voc12/SegmentationClass')
+    parser.add_argument('--gt-dir', type=str, default='SegmentationClass')
     parser.add_argument('--cam-npy-dir', type=str, default=None)
     parser.add_argument("--scales", nargs='+', type=float)
     parser.add_argument('--label-file-path', type=str, default=None)
@@ -186,7 +186,11 @@ def main(args):
     output_dir = Path(args.output_dir)
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
+    
+    if "voc12" in args.data_path:
+        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
 
+    args.gt_dir = os.path.join(args.data_path, args.gt_dir)
     # save config
     variant_file = "variant_attn.yml" if args.gen_attention_maps else "variant.yml"
     variant_str = yaml.dump(args.__dict__)

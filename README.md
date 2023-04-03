@@ -1,8 +1,11 @@
 # [WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation]()
 
+
+
 **Table of Contents**
 
 - [WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation](#weaktr-exploring-plain-vision-transformer-for-weakly-supervised-semantic-segmentation)
+  - [Highlight](#highlight)
   - [Abstract](#abstract)
   - [Setup](#setup)
     - [Environment](#environment)
@@ -12,14 +15,32 @@
     - [Phase 2: Online Retraining](#phase-2-online-retraining)
   - [Evaluation](#evaluation)
   - [Main results](#main-results)
-    - [Pascal VOC 2012 Dataset](#pascal-voc-2012-dataset)
+    - [CAM Generation](#cam-generation)
+    - [Online Retraining](#online-retraining)
+  - [Citation](#citation)
 
+## Highlight
+
+
+
+<div align=center><img src="img/miou_compare.png" width="500px"></div>
+
+- The proposed WeakTr fully explores the potential of plain ViT in the WSSS domain. State-of-the-art results are achieved on both challenging WSSS benchmarks, with **74.0%** mIoU on PASCAL VOC 2012 and **46.9%** on COCO 2014 validation sets respectively, significantly surpassing previous methods.
+- The proposed WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) based on the improved ViT pretrained on ImageNet-21k and fine-tuned on ImageNet-1k performs better with **78.4%** mIoU on PASCAL VOC 2012 and **50.3%** on COCO 2014 validation sets respectively.
 
 ## Abstract 
 
-<img src="WeakTr.png" style="zoom: 50%;" />
 
 This paper explores the properties of the plain Vision Transformer (ViT) for Weakly-supervised Semantic Segmentation (WSSS). The class activation map (CAM) is of critical importance for understanding a classification network and launching WSSS. We observe that different attention heads of ViT focus on different image areas. Thus a novel weight-based method is proposed to end-to-end estimate the importance of attention heads, while the self-attention maps are adaptively fused for high-quality CAM results that tend to have more complete objects. Besides, we propose a ViT-based gradient clipping decoder for online retraining with the CAM results to complete the WSSS task. We name this plain **Tr**ansformer-based **Weakly**-supervised learning framework WeakTr. It achieves the state-of-the-art WSSS performance on standard benchmarks, i.e., 78.4% mIoU on the val set of PASCAL VOC 2012 and 50.3% mIoU on the val set of COCO 2014.
+
+**Step1: End-to-End CAM Generation**
+
+<div align=center><img src="img/WeakTr.png" width="800px"></div>
+
+**Step2: Online Retraining with Gradient Clipping Decoder**
+
+<div align=center><img src="img/clip_grad_decoder.png" width="800px"></div>
+
 
 ## Setup
 
@@ -40,13 +61,62 @@ pip install -U openmim
 mim install mmcv-full==1.4.0
 pip install mmsegmentation
 ```
-
-### Data preparation
-
-- Download [the PASCAL VOC 2012 development kit](http://host.robots.ox.ac.uk/pascal/VOC/voc2012), it is suggested to make a soft link toward downloaded dataset.
+And install `pydensecrf` from source.
 
 ```bash
-ln -s $your_dataset_path/pcontext/VOCdevkit/VOC2012 data/voc12
+pip install git+https://github.com/lucasb-eyer/pydensecrf.git
+```
+### Data preparation
+
+**Pascal VOC 2012**
+- First download the Pascal VOC 2012 datasets use the scripts in the `data` dir.
+
+```bash
+cd data
+sh download_and_convert_voc12.sh
+```
+- Then download SBD annotations from [here](https://www.dropbox.com/s/oeu149j8qtbs1x0/SegmentationClassAug.zip).
+
+
+The folder structure is assumed to be:
+```bash
+- data
+  - download_and_convert_voc12.sh
+  + voc12
+    + VOCdevkit
+      + VOC2012
+        + JPEGImages
+        + SegmentationClass
+        + SegmentationClassAug
+- voc12
+  - cls_labels.npy
+  - train_aug_id.txt
+  - train_id.txt
+  - val_id.txt
+```
+
+**COCO 2014**
+- First download the COCO 2014 datasets use the scripts in the `data` dir.
+
+```bash
+cd data
+sh download_and_convert_coco.sh
+```
+The folder structure is assumed to be:
+```bash
+- data
+  - download_and_convert_coco.sh
+  - voc12
+  + coco
+    + images
+    + voc_format
+      + class_labels
+      + train.txt
+      + val.txt
+- coco
+  - cls_labels.npy
+  - train_id.txt
+  - val_id.txt
 ```
 
 ## Training
@@ -59,7 +129,8 @@ python main.py --model deit_small_WeakTr_patch16_224 \
                 --batch-size 64 \
                 --data-set VOC12 \
                 --img-list voc12 \
-                --img-ms-list data/voc12/ImageSets/Segmentation/train.txt \
+                --img-ms-list voc12/train_id.txt \
+                --gt-dir SegmentationClass \
                 --scales 1.0 \
                 --cam-npy-dir $your_cam_dir \
                 --visualize-cls-attn \
@@ -78,9 +149,10 @@ python main.py --model deit_small_WeakTr_patch16_224 \
                 --scales 1.0 0.8 1.2 \
                 --img-list voc12 \
                 --data-path data/voc12 \
-                --img-ms-list data/voc12/ImageSets/Segmentation/train.txt \
+                --img-ms-list voc12/trian_aug_id.txt \
+                --gt-dir SegmentationClassAug \
                 --output_dir $your_model_dir \
-                --resume $Weight \
+                --resume $your_checkpoint_path \
                 --gen_attention_maps \
                 --attention-type fused \
                 --visualize-cls-attn \
@@ -88,9 +160,10 @@ python main.py --model deit_small_WeakTr_patch16_224 \
                 --cam-npy-dir $your_CAM_npy_dir \
                 
 # CRF post-processing
-python evaluation.py --list data/voc12/ImageSets/Segmentation/train.txt \
-                     --gt_dir data/voc12/SegmentationClassAug \
-                     --img_dir data/voc12/JPEGImages \
+python evaluation.py --list voc12/train_aug_id.txt \
+                     --data-path data/voc12 \
+                     --gt_dir SegmentationClassAug \
+                     --img_dir JPEGImages \
                      --type npy \
                      --t 42 \
                      --predict_dir $your_CAM_npy_dir \
@@ -98,7 +171,7 @@ python evaluation.py --list data/voc12/ImageSets/Segmentation/train.txt \
                      --out-dir $your_CAM_label_dir \
 ```
 
-We provide CAM label [here](https://drive.google.com/drive/folders/186J1QUITCYZ4jZDJYzs6sKvXbsgLNYHX?usp=share_link), the mIoU is **69%** in the trainset.
+We store the [best checkpoint](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) of CAM generation and the [CAM label](https://drive.google.com/drive/folders/186J1QUITCYZ4jZDJYzs6sKvXbsgLNYHX?usp=share_link) for Online Retraining in Google Drive , the mIoU of the CAM label is **69%** in the trainset.
 
 ### Phase 2: Online Retraining
 
@@ -124,7 +197,7 @@ cd OnlineRetraining
 1. Multi-scale Evaluation 
 
 ```bash
-DATASET=$your_dataset_path PYTHONPATH=. WORK=$your_project_path python segm/eval/miou.py --window-batch-size 1 --multiscale \
+MASTER_PORT=10201 DATASET=$your_dataset_path PYTHONPATH=. WORK=$your_project_path python segm/eval/miou.py --window-batch-size 1 --multiscale \
 $your_checkpoint_path \
 --predict-dir $your_pred_npy_dir \
 pascal_context
@@ -134,30 +207,42 @@ pascal_context
 
 ```bash
 python -m segm.eval.make_crf \
---list ../data/voc12/ImageSets/Segmentation/val.txt \
+--list ../voc12/val_id.txt \
+--data-path ../data/voc12 \
 --predict-dir $your_pred_npy_dir \
 --predict-png-dir $your_pred_png_dir \
---img-path ../data/voc12/JPEGImages \
---gt-folder ../data/voc12/SegmentationClassAug \
+--img-path JPEGImages \
+--gt-folder SegmentationClassAug \
 ```
 
 3. Evaluation
 
 ```bash
 python -m segm.eval.make_crf \
---list ../data/voc12/ImageSets/Segmentation/val.txt \
+--list ../voc12/val_id.txt \
+--data-path ../data/voc12 \
 --predict-dir $your_pred_crf_dir \
 --type png \
---img-path ../data/voc12/JPEGImages \
---gt-folder ../data/voc12/SegmentationClassAug \
+--img-path JPEGImages \
+--gt-folder SegmentationClassAug \
 ```
 
 ## Main results
 
-### Pascal VOC 2012 Dataset
+### CAM Generation
 
-|                           Method                           |                                             Checkpoint                                             | Val mIoU | Pseudo-mask | Train mIoU |
-|:----------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:| :---------: | :--------: | :--------: |
-|                           WeakTr                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=sharing) | 74.0% | [Google Drive](https://drive.google.com/drive/folders/16QcrPxc2DabCUEUqOiPPs38oI7MWbrK2?usp=share_link) | 76.3% |
-| WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=sharing) | **78.4%** | [Google Drive]() | **80.3%** |
+|     Dataset     |                          Checkpoint                          |                          CAM_Label                           | Train mIoU |
+| :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
+| Pascal VOC 2012 | [Google Drive](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) | [Google Drive](https://drive.google.com/drive/folders/186J1QUITCYZ4jZDJYzs6sKvXbsgLNYHX?usp=share_link) |   69.0%    |
+|    COCO 2014    | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   41.9%    |
 
+### Online Retraining
+
+|                        Dataset                        |                        Method                           |                                             Checkpoint                                             | Val mIoU | Pseudo-mask | Train mIoU |
+|:----------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:| :---------: | :--------: | :--------: |------------------------------------------------------------|
+|                           Pascal VOC 2012                           |                           WeakTr                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=share_link) | 74.0% | [Google Drive](https://drive.google.com/drive/folders/1I9GtlhcRDCA2i6C0s1I_OUx5S0H6ruL0?usp=share_link) | 76.3% |
+| Pascal VOC 2012 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/1m8bBxjrqstVwwUi2fAiqtRmIk6COTxGy/view?usp=share_link) | **78.4%** | [Google Drive](https://drive.google.com/drive/folders/1MZAWfTB-PQGLcOYHHREna8bBIlSAKzn0?usp=share_link) | **80.3%** |
+| COCO 2014 | WeakTr | [Google Drive](https://drive.google.com/file/d/1iZN0Gcg_uVRUgxlmQs7suAGjv6bsj4EX/view?usp=share_link) | 46.9% | [Google Drive](https://drive.google.com/file/d/1qZaiKqqAWFfY_-yxqcv8T29o8z9KytbJ/view?usp=share_link) | 48.9% |
+| COCO 2014 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/13Gr_S8pG42IWDwcvvLcPmSfCW_MSa8fL/view?usp=share_link) | **50.3%** | [Google Drive](https://drive.google.com/file/d/1p-t-4pPIpJZDmj-oJ16PKVG3Yu8sNiaF/view?usp=share_link) | **51.3%** |
+
+## Citation

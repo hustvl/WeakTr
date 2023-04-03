@@ -106,9 +106,8 @@ categories_coco = ['background',
                    'toothbrush']
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--list",
-                        default='data/voc12/ImageSets/Segmentation/val.txt',
-                        type=str)
+    parser.add_argument("--list", default='voc12/train_id.txt', type=str)
+    parser.add_argument("--data-path", default='data/voc12')
     parser.add_argument("--predict-dir", default=None, type=str)
     parser.add_argument("--predict-png-dir", default=None, type=str)
     parser.add_argument("--img-path", default=None, type=str)
@@ -119,6 +118,11 @@ if __name__ == '__main__':
     parser.add_argument("--type", default="npy", type=str)
 
     args = parser.parse_args()
+    if "voc12" in args.data_path:
+        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
+
+    args.gt_folder = os.path.join(args.data_path, args.gt_folder)
+    args.img_path = os.path.join(args.data_path, args.img_path)
 
     df = pd.read_csv(args.list, names=['filename'], converters={"filename": str})
     name_list = df['filename'].values

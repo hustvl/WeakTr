@@ -265,9 +265,10 @@ def whole_eval(list, predict_dir, gt_dir, logfile, comment='comment', type='npy'
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--list", default='./VOC2012/ImageSets/Segmentation/train.txt', type=str)
+    parser.add_argument("--list", default='voc12/train_id.txt', type=str)
+    parser.add_argument("--data-path", default='data/voc12')
     parser.add_argument("--predict_dir", default='./out_rw', type=str)
-    parser.add_argument("--gt_dir", default='./VOC2012/SegmentationClass', type=str)
+    parser.add_argument("--gt_dir", default='SegmentationClass', type=str)
     parser.add_argument("--img_dir", type=str, default=None)
     parser.add_argument("--out-crf", action="store_true")
     parser.add_argument("--out-dir", default=None, type=str)
@@ -283,6 +284,12 @@ if __name__ == '__main__':
     parser.add_argument('--cam-type', default="cam", type=str)
 
     args = parser.parse_args()
+
+    if "voc12" in args.data_path:
+        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
+
+    args.gt_dir = os.path.join(args.data_path, args.gt_dir)
+    args.img_dir = os.path.join(args.data_path, args.img_dir)
 
     if args.type == 'npy':
         assert args.t is not None or args.curve

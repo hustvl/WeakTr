@@ -9,17 +9,17 @@ import torch
 from torch.utils.data import Dataset
 import PIL.Image
 
+from pathlib import Path
+
 
 def load_img_name_list(dataset_path):
-
     img_gt_name_list = open(dataset_path).readlines()
     img_name_list = [img_gt_name.strip() for img_gt_name in img_gt_name_list]
 
     return img_name_list
 
-def load_image_label_list_from_npy(img_name_list, label_file_path=None):
-    if label_file_path is None:
-        label_file_path = 'voc12/cls_labels.npy'
+
+def load_image_label_list_from_npy(img_name_list, label_file_path):
     cls_labels_dict = np.load(label_file_path, allow_pickle=True).item()
     label_list = []
     for id in img_name_list:
@@ -31,8 +31,9 @@ def load_image_label_list_from_npy(img_name_list, label_file_path=None):
     return label_list
     # return [cls_labels_dict[img_name] for img_name in img_name_list ]
 
+
 class COCOClsDataset(Dataset):
-    def __init__(self, img_name_list_path, coco_root, label_file_path, train=True, transform=None, gen_attn=False):
+    def __init__(self, img_name_list_path, coco_root, label_file_path="coco/cls_labels.npy", train=True, transform=None, gen_attn=False):
         img_name_list_path = os.path.join(img_name_list_path, f'{"train" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
@@ -43,8 +44,12 @@ class COCOClsDataset(Dataset):
 
     def __getitem__(self, idx):
         name = self.img_name_list[idx]
-        if self.train or self.gen_attn :
+        if self.train or self.gen_attn:
+            # try:
             img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
+            PIL.Image.open(os.path.join("data/coco", "images","000000520533.jpg")).convert("RGB")
+            # except:
+            #     print(os.path.join(self.coco_root, 'images', name + '.jpg'))
         else:
             img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
@@ -56,8 +61,9 @@ class COCOClsDataset(Dataset):
     def __len__(self):
         return len(self.img_name_list)
 
+
 class COCOClsDatasetMS(Dataset):
-    def __init__(self, img_name_list_path, coco_root, label_file_path, scales, train=True, transform=None,
+    def __init__(self, img_name_list_path, coco_root, scales, label_file_path="coco/cls_labels.npy", train=True, transform=None,
                  gen_attn=False, unit=1):
         # img_name_list_path = os.path.join(img_name_list_path, f'{"train" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
@@ -77,7 +83,8 @@ class COCOClsDatasetMS(Dataset):
             img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
 
-        rounded_size = (int(round(img.size[0] / self.unit) * self.unit), int(round(img.size[1] / self.unit) * self.unit))
+        rounded_size = (
+        int(round(img.size[0] / self.unit) * self.unit), int(round(img.size[1] / self.unit) * self.unit))
 
         ms_img_list = []
         for s in self.scales:
@@ -103,10 +110,10 @@ class COCOClsDatasetMS(Dataset):
 
 
 class VOC12Dataset(Dataset):
-    def __init__(self, img_name_list_path, voc12_root, train=True, transform=None, gen_attn=False):
+    def __init__(self, img_name_list_path, voc12_root, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False):
         img_name_list_path = os.path.join(img_name_list_path, f'{"train_aug" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
-        self.label_list = load_image_label_list_from_npy(self.img_name_list)
+        self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
         self.voc12_root = voc12_root
         self.transform = transform
 
@@ -124,10 +131,10 @@ class VOC12Dataset(Dataset):
 
 
 class VOC12DatasetMS(Dataset):
-    def __init__(self, img_name_list_path, voc12_root, scales, train=True, transform=None, gen_attn=False, unit=1):
+    def __init__(self, img_name_list_path, voc12_root, scales, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False, unit=1):
         # img_name_list_path = os.path.join(img_name_list_path, f'{"train_aug" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
-        self.label_list = load_image_label_list_from_npy(self.img_name_list)
+        self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
         self.voc12_root = voc12_root
         self.transform = transform
         self.unit = unit
@@ -138,7 +145,8 @@ class VOC12DatasetMS(Dataset):
         img = PIL.Image.open(os.path.join(self.voc12_root, 'JPEGImages', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
 
-        rounded_size = (int(round(img.size[0] / self.unit) * self.unit), int(round(img.size[1] / self.unit) * self.unit))
+        rounded_size = (
+        int(round(img.size[0] / self.unit) * self.unit), int(round(img.size[1] / self.unit) * self.unit))
 
         ms_img_list = []
         for s in self.scales:
@@ -171,17 +179,17 @@ def build_dataset(is_train, data_set, args, gen_attn=False):
                                train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 20
     elif data_set == 'VOC12MS':
-        dataset = VOC12DatasetMS(img_name_list_path=args.img_ms_list, voc12_root=args.data_path, scales=tuple(args.scales),
+        dataset = VOC12DatasetMS(img_name_list_path=args.img_ms_list, voc12_root=args.data_path,
+                                 scales=tuple(args.scales),
                                  train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 20
     elif data_set == 'COCO':
         dataset = COCOClsDataset(img_name_list_path=args.img_list, coco_root=args.data_path,
-                                 label_file_path=args.label_file_path,
                                  train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 90
     elif data_set == 'COCOMS':
         dataset = COCOClsDatasetMS(img_name_list_path=args.img_ms_list, coco_root=args.data_path,
-                                   scales=tuple(args.scales), label_file_path=args.label_file_path,
+                                   scales=tuple(args.scales),
                                    train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 90
 
