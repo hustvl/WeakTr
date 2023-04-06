@@ -1,4 +1,4 @@
-# [WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation]()
+# [WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation](https://arxiv.org/abs/2304.01184)
 
 
 
@@ -180,7 +180,7 @@ cd OnlineRetraining
 
 MASTER_PORT=10201 DATASET=$your_dataset_path WORK=$your_project_path python -m segm.train \
 --log-dir $your_log_dir \
---dataset pascal_context --backbone $your_model_name --decoder mask_transformer \
+--dataset pascal_voc --backbone $your_model_name --decoder mask_transformer \
 --batch-size 4 --epochs 100 -lr 1e-4 \
 --num-workers 2 --eval-freq 1 \
 --ann-dir $your_CAM_label_dir \
@@ -200,7 +200,7 @@ cd OnlineRetraining
 MASTER_PORT=10201 DATASET=$your_dataset_path PYTHONPATH=. WORK=$your_project_path python segm/eval/miou.py --window-batch-size 1 --multiscale \
 $your_checkpoint_path \
 --predict-dir $your_pred_npy_dir \
-pascal_context
+pascal_voc
 ```
 
 2. CRF post-processing
@@ -213,6 +213,8 @@ python -m segm.eval.make_crf \
 --predict-png-dir $your_pred_png_dir \
 --img-path JPEGImages \
 --gt-folder SegmentationClassAug \
+--num-cls 21 \
+--dataset voc12
 ```
 
 3. Evaluation
@@ -225,6 +227,8 @@ python -m segm.eval.make_crf \
 --type png \
 --img-path JPEGImages \
 --gt-folder SegmentationClassAug \
+--num-cls 21 \
+--dataset voc12
 ```
 
 ## Main results
@@ -233,16 +237,26 @@ python -m segm.eval.make_crf \
 
 |     Dataset     |                          Checkpoint                          |                          CAM_Label                           | Train mIoU |
 | :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
-| Pascal VOC 2012 | [Google Drive](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) | [Google Drive](https://drive.google.com/drive/folders/186J1QUITCYZ4jZDJYzs6sKvXbsgLNYHX?usp=share_link) |   69.0%    |
+| Pascal VOC 2012 | [Google Drive](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1iDI7NPO0qrTz4dsnCtyGlPZxrAgp2U77/view?usp=share_link) |   69.0%    |
 |    COCO 2014    | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   41.9%    |
 
 ### Online Retraining
 
 |                        Dataset                        |                        Method                           |                                             Checkpoint                                             | Val mIoU | Pseudo-mask | Train mIoU |
-|:----------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:| :---------: | :--------: | :--------: |------------------------------------------------------------|
-|                           Pascal VOC 2012                           |                           WeakTr                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=share_link) | 74.0% | [Google Drive](https://drive.google.com/drive/folders/1I9GtlhcRDCA2i6C0s1I_OUx5S0H6ruL0?usp=share_link) | 76.3% |
-| Pascal VOC 2012 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/1m8bBxjrqstVwwUi2fAiqtRmIk6COTxGy/view?usp=share_link) | **78.4%** | [Google Drive](https://drive.google.com/drive/folders/1MZAWfTB-PQGLcOYHHREna8bBIlSAKzn0?usp=share_link) | **80.3%** |
-| COCO 2014 | WeakTr | [Google Drive](https://drive.google.com/file/d/1iZN0Gcg_uVRUgxlmQs7suAGjv6bsj4EX/view?usp=share_link) | 46.9% | [Google Drive](https://drive.google.com/file/d/1qZaiKqqAWFfY_-yxqcv8T29o8z9KytbJ/view?usp=share_link) | 48.9% |
-| COCO 2014 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/13Gr_S8pG42IWDwcvvLcPmSfCW_MSa8fL/view?usp=share_link) | **50.3%** | [Google Drive](https://drive.google.com/file/d/1p-t-4pPIpJZDmj-oJ16PKVG3Yu8sNiaF/view?usp=share_link) | **51.3%** |
+|:----------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:| :---------: | :--------: | :--------: |------------|
+|                           Pascal VOC 2012                           |                           WeakTr                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=share_link) | 74.0% | [Google Drive](https://drive.google.com/file/d/1Z6ioXhy6L4_2XMrj2dk7QiYPzZnWdbt-/view?usp=share_link) | 76.5%      |
+| Pascal VOC 2012 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/1m8bBxjrqstVwwUi2fAiqtRmIk6COTxGy/view?usp=share_link) | **78.4%** | [Google Drive](https://drive.google.com/file/d/1kEhlTVZvIqMGD5ck8UDTxWxXD7UMf3VZ/view?usp=share_link) | **80.3%**  |
+| COCO 2014 | WeakTr | [Google Drive](https://drive.google.com/file/d/1iZN0Gcg_uVRUgxlmQs7suAGjv6bsj4EX/view?usp=share_link) | 46.9% | [Google Drive](https://drive.google.com/file/d/1qZaiKqqAWFfY_-yxqcv8T29o8z9KytbJ/view?usp=share_link) | 48.9%      |
+| COCO 2014 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/13Gr_S8pG42IWDwcvvLcPmSfCW_MSa8fL/view?usp=share_link) | **50.3%** | [Google Drive](https://drive.google.com/file/d/1p-t-4pPIpJZDmj-oJ16PKVG3Yu8sNiaF/view?usp=share_link) | **51.3%**  |
 
 ## Citation
+If you find this repository/work helpful in your research, welcome to cite the paper and give a ⭐.
+```
+@article{zhu2023weaktr,
+      title={WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation}, 
+      author={Lianghui Zhu and Yingyue Li and Jieming Fang and Yan Liu and Hao Xin and Wenyu Liu and Xinggang Wang},
+      year={2023},
+      journal={arxiv:2304.01184},
+}
+```
+

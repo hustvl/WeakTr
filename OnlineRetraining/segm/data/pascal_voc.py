@@ -4,19 +4,19 @@ from segm.data.base import BaseMMSeg
 from segm.data import utils
 from segm.config import dataset_dir
 
-PASCAL_CONTEXT_CONFIG_PATH = Path(__file__).parent / "config" / "pascal_context.py"
-PASCAL_CONTEXT_CATS_PATH = Path(__file__).parent / "config" / "pascal_context.yml"
+PASCAL_VOC_CONFIG_PATH = Path(__file__).parent / "config" / "pascal_voc.py"
+PASCAL_VOC_CATS_PATH = Path(__file__).parent / "config" / "pascal_voc.yml"
 
 
-class PascalContextDataset(BaseMMSeg):
+class PascalVOCDataset(BaseMMSeg):
     def __init__(self, image_size, crop_size, split, ann_dir=None, eval_split=None, **kwargs):
         self.ann_dir = ann_dir
         self.eval_split = eval_split
         super().__init__(
-            image_size, crop_size, split, PASCAL_CONTEXT_CONFIG_PATH, **kwargs
+            image_size, crop_size, split, PASCAL_VOC_CONFIG_PATH, **kwargs
         )
         self.names, self.colors = utils.dataset_cat_description(
-            PASCAL_CONTEXT_CATS_PATH
+            PASCAL_VOC_CATS_PATH
         )
         self.n_cls = 21
         self.ignore_label = 255

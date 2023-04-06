@@ -1,0 +1,127 @@
+- color:
+  - 120
+  - 120
+  - 120
+  id: 0
+  name: background
+- color:
+  - 180
+  - 120
+  - 120
+  id: 1
+  name: aeroplane
+- color:
+  - 6
+  - 230
+  - 230
+  id: 2
+  name: bicycle
+- color:
+  - 80
+  - 50
+  - 50
+  id: 3
+  name: bird
+- color:
+  - 4
+  - 200
+  - 3
+  id: 4
+  name: boat
+- color:
+  - 120
+  - 120
+  - 80
+  id: 5
+  name: bottle
+- color:
+  - 140
+  - 140
+  - 140
+  id: 6
+  name: bus
+- color:
+  - 204
+  - 5
+  - 255
+  id: 7
+  name: car
+- color:
+  - 230
+  - 230
+  - 230
+  id: 8
+  name: cat
+- color:
+  - 4
+  - 250
+  - 7
+  id: 9
+  name: chair
+- color:
+  - 224
+  - 5
+  - 255
+  id: 10
+  name: cow
+- color:
+  - 235
+  - 255
+  - 7
+  id: 11
+  name: table
+- color:
+  - 150
+  - 5
+  - 61
+  id: 12
+  name: dog
+- color:
+  - 120
+  - 120
+  - 70
+  id: 13
+  name: horse
+- color:
+  - 8
+  - 255
+  - 51
+  id: 14
+  name: motorbike
+- color:
+  - 255
+  - 6
+  - 82
+  id: 15
+  name: person
+- color:
+  - 143
+  - 255
+  - 140
+  id: 16
+  name: pottedplant
+- color:
+  - 204
+  - 255
+  - 4
+  id: 17
+  name: sheep
+- color:
+  - 255
+  - 51
+  - 7
+  id: 18
+  name: sofa
+- color:
+  - 204
+  - 70
+  - 3
+  id: 19
+  name: train
+- color:
+  - 0
+  - 102
+  - 200
+  id: 20
+  name: tvmonitor
+

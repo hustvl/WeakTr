@@ -129,6 +129,15 @@ dataset:
     crop_size: 480
     window_size: 480
     window_stride: 320
+  pascal_voc:
+    epochs: 100
+    eval_freq: 8
+    batch_size: 4
+    learning_rate: 0.0001
+    im_size: 520
+    crop_size: 480
+    window_size: 480
+    window_stride: 320
   coco:
     epochs: 256
     eval_freq: 1
