@@ -9,31 +9,25 @@ PASCAL_CONTEXT_CATS_PATH = Path(__file__).parent / "config" / "pascal_context.ym
 
 
 class PascalContextDataset(BaseMMSeg):
-    def __init__(self, image_size, crop_size, split, ann_dir=None, eval_split=None, **kwargs):
-        self.ann_dir = ann_dir
-        self.eval_split = eval_split
+    def __init__(self, image_size, crop_size, split, **kwargs):
         super().__init__(
             image_size, crop_size, split, PASCAL_CONTEXT_CONFIG_PATH, **kwargs
         )
         self.names, self.colors = utils.dataset_cat_description(
             PASCAL_CONTEXT_CATS_PATH
         )
-        self.n_cls = 21
+        self.n_cls = 60
         self.ignore_label = 255
         self.reduce_zero_label = False
 
     def update_default_config(self, config):
         root_dir = dataset_dir()
-        path = Path(root_dir)
+        path = Path(root_dir) / "pcontext"
         config.data_root = path
         if self.split == "train":
-            config.data.train.data_root = path / "VOCdevkit/VOC2012/"
-            if self.ann_dir:
-                config.data.train.ann_dir = self.ann_dir
+            config.data.train.data_root = path / "VOCdevkit/VOC2010/"
         elif self.split == "val":
-            config.data.val.data_root = path / "VOCdevkit/VOC2012/"
-            if self.eval_split is not None:
-                config.data.val.split = self.eval_split
+            config.data.val.data_root = path / "VOCdevkit/VOC2010/"
         elif self.split == "test":
             raise ValueError("Test split is not valid for Pascal Context dataset")
         config = super().update_default_config(config)
