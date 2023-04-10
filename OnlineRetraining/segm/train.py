@@ -98,6 +98,7 @@ def main(
         min_lr,
         start_value,
         patch_size,
+        gc,
         local_rank,
 ):
     if local_rank is not None:

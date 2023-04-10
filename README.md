@@ -207,7 +207,7 @@ pascal_voc
 
 ```bash
 python -m segm.eval.make_crf \
---list ../voc12/val_id.txt \
+--list ImageSets/Segmentation/val.txt \
 --data-path ../data/voc12 \
 --predict-dir $your_pred_npy_dir \
 --predict-png-dir $your_pred_png_dir \
@@ -221,7 +221,7 @@ python -m segm.eval.make_crf \
 
 ```bash
 python -m segm.eval.make_crf \
---list ../voc12/val_id.txt \
+--list ImageSets/Segmentation/val.txt \
 --data-path ../data/voc12 \
 --predict-dir $your_pred_crf_dir \
 --type png \

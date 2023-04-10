@@ -118,8 +118,6 @@ def eval_dataset(
     im_size = dataset_kwargs["image_size"]
     cat_names = db.base_dataset.names
     n_cls = db.unwrapped.n_cls
-    if dataset_name == "pascal_context":
-        n_cls = 21
     if multiscale:
         db.dataset.set_multiscale_mode()
 
