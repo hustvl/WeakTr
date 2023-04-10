@@ -65,6 +65,7 @@ from segm.optim.optim_factory import get_parameter_groups, LayerDecayValueAssign
 # pus parameters
 @click.option("--start-value", default=None, type=float)
 @click.option("--patch-size", default=None, type=int)
+@click.option("--gc/--no-gc", default=True, is_flag=True)
 # dist parameters
 @click.option("--local_rank", type=int, default=None)
 def main(
@@ -195,7 +196,8 @@ def main(
         ),
         clip_kwargs=dict(
             start_value=start_value,
-            patch_size=patch_size
+            patch_size=patch_size,
+            gradientclipping=gc
         ),
         net_kwargs=model_cfg,
         amp=amp,
@@ -231,8 +233,10 @@ def main(
 
     # GradientClipping
     clip_kwargs = variant["clip_kwargs"]
-    gradientclipping = GradientClipping(**clip_kwargs)
-    gradientclipping.to(ptu.device)
+    gradientclipping = None
+    if gc:
+        gradientclipping = GradientClipping(**clip_kwargs)
+        gradientclipping.to(ptu.device)
 
     # optimizer
     optimizer_kwargs = variant["optimizer_kwargs"]
