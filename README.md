@@ -149,7 +149,7 @@ python main.py --model deit_small_WeakTr_patch16_224 \
                 --scales 1.0 0.8 1.2 \
                 --img-list voc12 \
                 --data-path data/voc12 \
-                --img-ms-list voc12/trian_aug_id.txt \
+                --img-ms-list voc12/train_aug_id.txt \
                 --gt-dir SegmentationClassAug \
                 --output_dir $your_model_dir \
                 --resume $your_checkpoint_path \
