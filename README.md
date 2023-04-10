@@ -178,7 +178,7 @@ We store the [best checkpoint](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUr
 ```bash
 cd OnlineRetraining
 
-MASTER_PORT=10201 DATASET=$your_dataset_path WORK=$your_project_path python -m segm.train \
+DATASET=$your_dataset_path WORK=$your_project_path python -m segm.train \
 --log-dir $your_log_dir \
 --dataset pascal_voc --backbone $your_model_name --decoder mask_transformer \
 --batch-size 4 --epochs 100 -lr 1e-4 \

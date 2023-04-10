@@ -12,8 +12,8 @@ from mmcv.utils import Config
 
 
 from segm.data.utils import STATS, IGNORE_LABEL
-from segm.data import utils
 
+from segm.utils.logger import printd
 
 class BaseMMSeg(Dataset):
     def __init__(
@@ -35,7 +35,7 @@ class BaseMMSeg(Dataset):
         for k, v in self.normalization.items():
             v = np.round(255 * np.array(v), 2)
             self.normalization[k] = tuple(v)
-        print(f"Use normalization: {self.normalization}")
+        printd(f"Use normalization: {self.normalization}")
 
         config = Config.fromfile(config_path)
 
@@ -56,7 +56,6 @@ class BaseMMSeg(Dataset):
             config_pipeline = getattr(config, f"{self.split}_pipeline")
 
         img_scale = (self.ratio * self.image_size, self.image_size)
-        print(img_scale)
         if self.split not in train_splits:
             assert config_pipeline[1]["type"] == "MultiScaleFlipAug"
             config_pipeline = config_pipeline[1]["transforms"]
