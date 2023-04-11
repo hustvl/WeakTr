@@ -27,8 +27,8 @@ class COCOSegmentation(object):
         img_metadata = coco.loadImgs(img_id)[0]
         path = img_metadata['file_name']
 
-        if img_metadata['height'] < 256 or img_metadata['width'] < 256:
-            return None, None, None
+        # if img_metadata['height'] < 256 or img_metadata['width'] < 256:
+        #     return None, None, None
 
         try:
             _img = Image.open(os.path.join(self.img_dir, path)).convert('RGB')
@@ -37,8 +37,8 @@ class COCOSegmentation(object):
             _target = Image.fromarray(self._gen_seg_mask(cocotarget, img_metadata['height'], img_metadata['width']))
 
             len_uniq_vals = len(np.unique(_target))
-            if len_uniq_vals < 2:
-                return None, None, None
+            # if len_uniq_vals < 2:
+            #     return None, None, None
 
             return path, _img, _target
         except OSError:
