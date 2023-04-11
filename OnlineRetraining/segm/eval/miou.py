@@ -10,7 +10,7 @@ import shutil
 import torch
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
-from segm.utils import distributed
+
 from segm.utils.logger import MetricLogger
 import segm.utils.torch as ptu
 
@@ -244,18 +244,14 @@ def main(
     if local_rank is not None:
         torch.cuda.set_device(local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
-        ptu.set_gpu_dist_mode(True)
-    # start distributed mode
-    # ptu.set_gpu_mode(True)
-    # distributed.init_process()
+    ptu.set_gpu_dist_mode(True)
 
     model, variant = load_model(model_path, backbone=backbone)
     patch_size = model.patch_size
     model.eval()
     model.to(ptu.device)
     if ptu.distributed:
-        # model = DDP(model, device_ids=[ptu.device], find_unused_parameters=True)
-        model = DDP(model, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+        model = DDP(model, device_ids=[ptu.device], find_unused_parameters=True)
 
     cfg = config.load_config()
     dataset_cfg = cfg["dataset"][dataset_name]
@@ -298,10 +294,6 @@ def main(
         predict_dir,
         weight
     )
-
-    # distributed.barrier()
-    # distributed.destroy_process()
-    # sys.exit(1)
 
 
 if __name__ == "__main__":

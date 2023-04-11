@@ -16,23 +16,6 @@ distributed = False
 dist_rank = 0
 world_size = 1
 
-
-def set_gpu_mode(mode):
-    global use_gpu
-    global device
-    global gpu_id
-    global distributed
-    global dist_rank
-    global world_size
-    gpu_id = int(os.environ.get("SLURM_LOCALID", 0))
-    dist_rank = int(os.environ.get("SLURM_PROCID", 0))
-    world_size = int(os.environ.get("SLURM_NTASKS", 1))
-
-    distributed = world_size > 1
-    use_gpu = mode
-    device = torch.device(f"cuda:{gpu_id}" if use_gpu else "cpu")
-    torch.backends.cudnn.benchmark = True
-
 def set_gpu_dist_mode(mode):
     global use_gpu
     global device
@@ -50,6 +33,6 @@ def set_gpu_dist_mode(mode):
 
     distributed = world_size > 1
     use_gpu = mode
-    device = torch.device(f"cuda" if use_gpu else "cpu")
-    torch.backends.cudnn.benchmark = True
 
+    device = dist_rank % torch.cuda.device_count()
+    torch.backends.cudnn.benchmark = True

@@ -8,7 +8,6 @@ import click
 import argparse
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from segm.utils import distributed
 import segm.utils.torch as ptu
 from segm import config
 
@@ -22,12 +21,11 @@ from segm.model.decoder import GradientClipping
 from timm.utils import NativeScaler
 from contextlib import suppress
 
-from segm.utils.distributed import sync_model
 from segm.engine import train_one_epoch, evaluate
 
 import mlflow
 
-from hashlib import sha1
+from segm.utils.logger import printd
 
 from segm.optim.optim_factory import get_parameter_groups, LayerDecayValueAssigner, create_optimizer
 
@@ -105,17 +103,14 @@ def main(
     if local_rank is not None:
         torch.cuda.set_device(local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
-        ptu.set_gpu_dist_mode(True)
-    else:
-        # start distributed mode
-        ptu.set_gpu_mode(True)
-        distributed.init_process()
+    ptu.set_gpu_dist_mode(True)
 
-    # start mlflow
-    if resume:
-        mlflow.start_run(run_id=run_id)
-    else:
-        mlflow.start_run(run_name=log_dir)
+    if ptu.dist_rank == 0:
+        # start mlflow
+        if resume:
+            mlflow.start_run(run_id=run_id)
+        else:
+            mlflow.start_run(run_name=log_dir)
 
     # set up configuration
     cfg = config.load_config()
@@ -280,7 +275,7 @@ def main(
 
     # resume
     if resume and checkpoint_path.exists():
-        print(f"Resuming training from checkpoint: {checkpoint_path}")
+        printd(f"Resuming training from checkpoint: {checkpoint_path}")
         checkpoint = torch.load(checkpoint_path, map_location="cpu")
         model.load_state_dict(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
@@ -295,15 +290,12 @@ def main(
         except:
             pass
 
-    else:
-        sync_model(log_dir, model)
-
     if ptu.distributed:
-        model = DDP(model, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=True)
+        model = DDP(model, device_ids=[ptu.device], find_unused_parameters=True)
 
     # save config
     variant_str = yaml.dump(variant)
-    print(f"Configuration:\n{variant_str}")
+    printd(f"Configuration:\n{variant_str}")
     variant["net_kwargs"] = net_kwargs
     variant["dataset_kwargs"] = dataset_kwargs
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -321,10 +313,10 @@ def main(
 
     val_seg_gt = val_loader.dataset.get_gt_seg_maps()
 
-    print(f"Train dataset length: {len(train_loader.dataset)}")
-    print(f"Val dataset length: {len(val_loader.dataset)}")
-    print(f"Encoder parameters: {num_params(model_without_ddp.encoder)}")
-    print(f"Decoder parameters: {num_params(model_without_ddp.decoder)}")
+    printd(f"Train dataset length: {len(train_loader.dataset)}")
+    printd(f"Val dataset length: {len(val_loader.dataset)}")
+    printd(f"Encoder parameters: {num_params(model_without_ddp.encoder)}")
+    printd(f"Decoder parameters: {num_params(model_without_ddp.decoder)}")
 
     for epoch in range(start_epoch, num_epochs):
         # train for one epoch
@@ -381,9 +373,9 @@ def main(
                 torch.save(snapshot, checkpoint_best_path)
             eval_logger.update(**{"max_miou": max_miou, "n": 1})
             eval_logger.update(**{"max_epoch": max_epoch, "n": 1})
-            if ptu.dist_rank == 0:
-                print(f"Stats [{epoch}]:", eval_logger, flush=True)
-                print("")
+
+            printd(f"Stats [{epoch}]:", eval_logger, flush=True)
+            printd("")
 
         # log stats
         if ptu.dist_rank == 0:
@@ -407,10 +399,6 @@ def main(
                 mlflow.log_metric(key, value, log_stats["epoch"])
             with open(log_dir / "log.txt", "a") as f:
                 f.write(json.dumps(log_stats) + "\n")
-
-    distributed.barrier()
-    distributed.destroy_process()
-    sys.exit(1)
 
 
 if __name__ == "__main__":
