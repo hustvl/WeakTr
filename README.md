@@ -59,7 +59,7 @@ Then, install [mmcv==1.4.0](https://github.com/open-mmlab/mmcv) and [mmsegmentat
 ```bash
 pip install -U openmim
 mim install mmcv-full==1.4.0
-pip install mmsegmentation
+pip install mmsegmentation==0.30.0
 ```
 And install `pydensecrf` from source.
 
