@@ -93,7 +93,7 @@ def process_batch(
     seg_prob = seg_prob[keys]
 
     if predict_dir is not None:
-        np.save(path, {"prob": seg_prob, "keys": keys, "pred": seg_pred})
+        np.save(path, {"prob": seg_prob, "keys": keys})
 
     return filename, im.cpu(), seg_pred
 

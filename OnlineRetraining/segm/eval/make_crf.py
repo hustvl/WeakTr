@@ -143,7 +143,9 @@ if __name__ == '__main__':
             path = os.path.join(args.predict_dir, name_list[i] + ".npy")
             seg_prob = np.load(path, allow_pickle=True).item()
             if args.type == "npypng":
-                predict = seg_prob["pred"][0].astype(np.uint8)
+                keys = seg_prob["keys"]
+                predict = np.argmax(seg_prob["prob"], axis=0)
+                predict = keys[predict].astype(np.uint8)
             else:
                 orig_image = np.asarray(Image.open(os.path.join(args.img_path, name_list[i] + ".jpg")).convert("RGB"))
                 keys = seg_prob["keys"]
