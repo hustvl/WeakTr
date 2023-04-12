@@ -140,7 +140,7 @@ def load_model(model_path, backbone=None):
         model = create_multi_segmenter(net_kwargs)
     else:
         model = create_segmenter(net_kwargs)
-    data = torch.load(model_path, map_location=ptu.device)
+    data = torch.load(model_path, map_location="cpu")
     checkpoint = data["model"]
 
     model.load_state_dict(checkpoint, strict=False)

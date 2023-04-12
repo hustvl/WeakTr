@@ -32,7 +32,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser('DeiT training and evaluation script', add_help=False)
     parser.add_argument('--batch-size', default=64, type=int)
     parser.add_argument('--epochs', default=60, type=int)
-    parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--seed', type=int, default=504)
     parser.add_argument('--epoch-save-ckpt', action="store_true")
 
     # distributed parameters
@@ -123,8 +123,10 @@ def get_args_parser():
                         help='Do not random erase first (clean) augmentation split')
 
     # * Finetuning params
-    parser.add_argument('--finetune', default='', help='finetune from checkpoint')
-    parser.add_argument('--extra-token', action="store_true")
+    parser.add_argument('--finetune', default='https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth', help='finetune from checkpoint')
+    parser.add_argument('--extra-token', action="store_true", default=True)
+    parser.add_argument('--no-extra-token', action="store_false", dest="extra-token")
+
 
     # Dataset parameters
     parser.add_argument('--data-path', default='', type=str, help='dataset path')
@@ -153,16 +155,21 @@ def get_args_parser():
     parser.add_argument('--layer-index', type=int, default=12, help='extract attention maps from the last layers')
 
     parser.add_argument('--img-ms-list', type=str, default=None)
-    parser.add_argument('--patch-attn-refine', action='store_true')
-    parser.add_argument('--visualize-cls-attn', action='store_true')
+    parser.add_argument('--patch-attn-refine', action='store_true', default=True)
+    parser.add_argument('--no-patch-attn-refine', action='store_false', dest="patch-attn-refine")
+
+    parser.add_argument('--visualize-cls-attn', action='store_true', default=True)
+    parser.add_argument('--no-visualize-cls-attn', action='store_false', dest="visualize-cls-attn")
 
     parser.add_argument('--gt-dir', type=str, default='SegmentationClass')
     parser.add_argument('--cam-npy-dir', type=str, default=None)
-    parser.add_argument("--scales", nargs='+', type=float)
+    parser.add_argument("--scales", nargs='+', type=float, default=[1.0])
     parser.add_argument('--label-file-path', type=str, default=None)
     parser.add_argument('--attention-type', type=str, default='fused')
 
-    parser.add_argument('--if_eval_miou', action='store_true', default=False)
+    parser.add_argument('--if_eval_miou', action='store_true', default=True)
+    parser.add_argument('--no-if_eval_miou', action='store_false', dest="if_eval_miou")
+
     parser.add_argument('--eval_miou_threshold_start', type=int, default=30)
     parser.add_argument('--eval_miou_threshold_end', type=int, default=60)
 
@@ -186,11 +193,7 @@ def main(args):
     output_dir = Path(args.output_dir)
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
-    
-    if "voc12" in args.data_path:
-        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
 
-    args.gt_dir = os.path.join(args.data_path, args.gt_dir)
     # save config
     variant_file = "variant_attn.yml" if args.gen_attention_maps else "variant.yml"
     variant_str = yaml.dump(args.__dict__)
@@ -226,6 +229,7 @@ def main(args):
     # 256 resize
     dataset_val, _ = build_dataset(is_train=False, data_set=args.data_set, args=args)
 
+    args.gt_dir = dataset_train_.gt_dir
     if args.distributed:
         sampler_train_ = DistributedSampler(dataset_train_, shuffle=False)
         sampler_train = torch.utils.data.DistributedSampler(dataset_train, shuffle=True)

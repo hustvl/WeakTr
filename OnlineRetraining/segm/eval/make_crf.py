@@ -118,11 +118,18 @@ if __name__ == '__main__':
     parser.add_argument("--type", default="npy", type=str)
 
     args = parser.parse_args()
-    if "voc12" in args.data_path:
-        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
+    if args.dataset == "voc12":
+        args.data_path = Path(args.data_path) / "voc12" if "voc12" not in args.data_path else args.data_path
+        args.data_path = Path(args.data_path) / "VOCdevkit" / "VOC2012"
+        args.gt_folder = args.data_path / "SegmentationClassAug"
+        args.img_path = args.data_path / "JPEGImages"
+        args.list = os.path.join(args.data_path / "ImageSets" / "Segmentation", args.list)
 
-    args.gt_folder = os.path.join(args.data_path, args.gt_folder)
-    args.img_path = os.path.join(args.data_path, args.img_path)
+    if args.dataset == "coco":
+        args.data_path = Path(args.data_path) / "coco" if "coco" not in args.data_path else args.data_path
+        args.gt_folder = args.data_path / "voc_format" / "class_labels"
+        args.img_path = args.data_path / "images"
+        args.list = os.path.join(args.data_path / "voc_format", args.list)
 
     df = pd.read_csv(args.list, names=['filename'], converters={"filename": str})
     name_list = df['filename'].values
@@ -132,29 +139,34 @@ if __name__ == '__main__':
 
 
     def compute(i):
-        if args.type == "npy":
+        if "npy" in args.type:
             path = os.path.join(args.predict_dir, name_list[i] + ".npy")
             seg_prob = np.load(path, allow_pickle=True).item()
-            orig_image = np.asarray(Image.open(os.path.join(args.img_path, name_list[i] + ".jpg")).convert("RGB"))
-            keys = seg_prob["keys"]
-            seg_prob = seg_prob["prob"]
-
-            if args.dataset == "voc12":
-                seg_prob = crf_inference_voc12(orig_image, seg_prob, labels=seg_prob.shape[0])
-            elif args.dataset == "coco":
-                # seg_prob = F.softmax(torch.tensor(seg_prob), dim=0).cpu().numpy()
-                seg_prob = crf_inference_coco(orig_image, seg_prob, labels=seg_prob.shape[0])
+            if args.type == "npypng":
+                keys = seg_prob["keys"]
+                predict = np.argmax(seg_prob["prob"], axis=0)
+                predict = keys[predict].astype(np.uint8)
             else:
-                raise "dataset error"
+                orig_image = np.asarray(Image.open(os.path.join(args.img_path, name_list[i] + ".jpg")).convert("RGB"))
+                keys = seg_prob["keys"]
+                seg_prob = seg_prob["prob"]
 
-            predict = np.argmax(seg_prob, axis=0)
-            predict = keys[predict].astype(np.uint8)
+                if args.dataset == "voc12":
+                    seg_prob = crf_inference_voc12(orig_image, seg_prob, labels=seg_prob.shape[0])
+                elif args.dataset == "coco":
+                    # seg_prob = F.softmax(torch.tensor(seg_prob), dim=0).cpu().numpy()
+                    seg_prob = crf_inference_coco(orig_image, seg_prob, labels=seg_prob.shape[0])
+                else:
+                    raise "dataset error"
+
+                predict = np.argmax(seg_prob, axis=0)
+                predict = keys[predict].astype(np.uint8)
         elif args.type == "png":
             path = os.path.join(args.predict_dir, name_list[i] + ".png")
             predict = np.array(Image.open(path))
 
         if args.predict_png_dir is not None:
-            predict_img = Image.fromarray(predict)
+            predict_img = Image.fromarray(predict.astype(np.uint8))
             predict_img.save(os.path.join(args.predict_png_dir, name_list[i] + ".png"))
 
         if "test" not in args.list:

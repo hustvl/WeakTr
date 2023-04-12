@@ -32,7 +32,7 @@ from segm.optim.optim_factory import get_parameter_groups, LayerDecayValueAssign
 
 @click.command(help="")
 @click.option("--log-dir", type=str, help="logging directory")
-@click.option("--eval-freq", default=None, type=int)
+@click.option("--eval-freq", default=1, type=int)
 @click.option("--amp/--no-amp", default=False, is_flag=True)
 @click.option("--resume/--no-resume", default=False, is_flag=True)
 @click.option("--run-id", default=None, type=str)
@@ -54,9 +54,9 @@ from segm.optim.optim_factory import get_parameter_groups, LayerDecayValueAssign
 @click.option("--weight-decay", default=0.0, type=float)
 @click.option("--dropout", default=0.0, type=float)
 @click.option("--drop-path", default=0.1, type=float)
-@click.option("--batch-size", default=None, type=int)
-@click.option("--epochs", default=None, type=int)
-@click.option("-lr", "--learning-rate", default=None, type=float)
+@click.option("--batch-size", default=4, type=int)
+@click.option("--epochs", default=100, type=int)
+@click.option("-lr", "--learning-rate", default=1e-4, type=float)
 @click.option("--normalization", default=None, type=str)
 @click.option("--enc-lr", default=0.1, type=float)
 @click.option("--layer-decay", default=1.0, type=float)
@@ -65,6 +65,7 @@ from segm.optim.optim_factory import get_parameter_groups, LayerDecayValueAssign
 # pus parameters
 @click.option("--start-value", default=None, type=float)
 @click.option("--patch-size", default=None, type=int)
+@click.option("--gc/--no-gc", default=True, is_flag=True)
 # dist parameters
 @click.option("--local_rank", type=int, default=None)
 def main(
@@ -98,6 +99,7 @@ def main(
         min_lr,
         start_value,
         patch_size,
+        gc,
         local_rank,
 ):
     if local_rank is not None:
@@ -161,6 +163,7 @@ def main(
         version="normal",
         resume=resume,
         layer_decay=layer_decay,
+        gradientclipping=gc,
         dataset_kwargs=dict(
             dataset=dataset,
             image_size=im_size,
@@ -194,7 +197,7 @@ def main(
         ),
         clip_kwargs=dict(
             start_value=start_value,
-            patch_size=patch_size
+            patch_size=patch_size,
         ),
         net_kwargs=model_cfg,
         amp=amp,
@@ -230,8 +233,10 @@ def main(
 
     # GradientClipping
     clip_kwargs = variant["clip_kwargs"]
-    gradientclipping = GradientClipping(**clip_kwargs)
-    gradientclipping.to(ptu.device)
+    gradientclipping = None
+    if gc:
+        gradientclipping = GradientClipping(**clip_kwargs)
+        gradientclipping.to(ptu.device)
 
     # optimizer
     optimizer_kwargs = variant["optimizer_kwargs"]

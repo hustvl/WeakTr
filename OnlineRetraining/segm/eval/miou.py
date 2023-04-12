@@ -93,7 +93,7 @@ def process_batch(
     seg_prob = seg_prob[keys]
 
     if predict_dir is not None:
-        np.save(path, {"prob": seg_prob, "keys": keys, "pred": seg_pred})
+        np.save(path, {"prob": seg_prob, "keys": keys})
 
     return filename, im.cpu(), seg_pred
 
@@ -118,8 +118,6 @@ def eval_dataset(
     im_size = dataset_kwargs["image_size"]
     cat_names = db.base_dataset.names
     n_cls = db.unwrapped.n_cls
-    if dataset_name == "pascal_context":
-        n_cls = 21
     if multiscale:
         db.dataset.set_multiscale_mode()
 
@@ -215,7 +213,7 @@ def eval_dataset(
 @click.option("--blend/--no-blend", default=True, is_flag=True)
 @click.option("--window-size", default=None, type=int)
 @click.option("--window-stride", default=None, type=int)
-@click.option("--window-batch-size", default=4, type=int)
+@click.option("--window-batch-size", default=1, type=int)
 @click.option("--save-images/--no-save-images", default=False, is_flag=True)
 @click.option("-frac-dataset", "--frac-dataset", default=1.0, type=float)
 @click.option("--local_rank", type=int, default=None)

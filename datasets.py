@@ -33,25 +33,19 @@ def load_image_label_list_from_npy(img_name_list, label_file_path):
 
 
 class COCOClsDataset(Dataset):
-    def __init__(self, img_name_list_path, coco_root, label_file_path="coco/cls_labels.npy", train=True, transform=None, gen_attn=False):
-        img_name_list_path = os.path.join(img_name_list_path, f'{"train" if train or gen_attn else "val"}_id.txt')
+    def __init__(self, data_root, label_file_path="coco/cls_labels.npy", train=True, transform=None, gen_attn=False):
+        img_name_list_path = os.path.join("coco", f'{"train" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
-        self.coco_root = coco_root
+        self.data_root = Path(data_root) / "coco" if "coco" not in data_root else Path(data_root)
+        self.gt_dir = self.data_root / "voc_format" / "class_labels"
         self.transform = transform
         self.train = train
         self.gen_attn = gen_attn
 
     def __getitem__(self, idx):
         name = self.img_name_list[idx]
-        if self.train or self.gen_attn:
-            # try:
-            img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
-            PIL.Image.open(os.path.join("data/coco", "images","000000520533.jpg")).convert("RGB")
-            # except:
-            #     print(os.path.join(self.coco_root, 'images', name + '.jpg'))
-        else:
-            img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
+        img = PIL.Image.open(os.path.join(self.data_root, 'images', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
         if self.transform:
             img = self.transform(img)
@@ -63,12 +57,12 @@ class COCOClsDataset(Dataset):
 
 
 class COCOClsDatasetMS(Dataset):
-    def __init__(self, img_name_list_path, coco_root, scales, label_file_path="coco/cls_labels.npy", train=True, transform=None,
+    def __init__(self, img_name_list_path, data_root, scales, label_file_path="coco/cls_labels.npy", train=True, transform=None,
                  gen_attn=False, unit=1):
-        # img_name_list_path = os.path.join(img_name_list_path, f'{"train" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
-        self.coco_root = coco_root
+        self.data_root = Path(data_root) / "coco" if "coco" not in data_root else Path(data_root)
+        self.gt_dir = self.data_root / "voc_format" / "class_labels"
         self.transform = transform
         self.train = train
         self.unit = unit
@@ -77,10 +71,7 @@ class COCOClsDatasetMS(Dataset):
 
     def __getitem__(self, idx):
         name = self.img_name_list[idx]
-        if self.train or self.gen_attn:
-            img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
-        else:
-            img = PIL.Image.open(os.path.join(self.coco_root, 'images', name + '.jpg')).convert("RGB")
+        img = PIL.Image.open(os.path.join(self.data_root, 'images', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
 
         rounded_size = (
@@ -110,16 +101,18 @@ class COCOClsDatasetMS(Dataset):
 
 
 class VOC12Dataset(Dataset):
-    def __init__(self, img_name_list_path, voc12_root, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False):
-        img_name_list_path = os.path.join(img_name_list_path, f'{"train_aug" if train or gen_attn else "val"}_id.txt')
+    def __init__(self, data_root, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False):
+        img_name_list_path = os.path.join("voc12", f'{"train_aug" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
-        self.voc12_root = voc12_root
+        data_root = Path(data_root) / "voc12" if "voc12" not in data_root else data_root
+        self.data_root = Path(data_root) / "VOCdevkit" / "VOC2012"
+        self.gt_dir = self.data_root / "SegmentationClass"
         self.transform = transform
 
     def __getitem__(self, idx):
         name = self.img_name_list[idx]
-        img = PIL.Image.open(os.path.join(self.voc12_root, 'JPEGImages', name + '.jpg')).convert("RGB")
+        img = PIL.Image.open(os.path.join(self.data_root, 'JPEGImages', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
         if self.transform:
             img = self.transform(img)
@@ -131,18 +124,20 @@ class VOC12Dataset(Dataset):
 
 
 class VOC12DatasetMS(Dataset):
-    def __init__(self, img_name_list_path, voc12_root, scales, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False, unit=1):
+    def __init__(self, img_name_list_path, data_root, scales, label_file_path="voc12/cls_labels.npy", train=True, transform=None, gen_attn=False, unit=1):
         # img_name_list_path = os.path.join(img_name_list_path, f'{"train_aug" if train or gen_attn else "val"}_id.txt')
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.label_list = load_image_label_list_from_npy(self.img_name_list, label_file_path)
-        self.voc12_root = voc12_root
+        data_root = Path(data_root) / "voc12" if "voc12" not in data_root else data_root
+        self.data_root = Path(data_root) / "VOCdevkit" / "VOC2012"
+        self.gt_dir = self.data_root / "SegmentationClassAug"
         self.transform = transform
         self.unit = unit
         self.scales = scales
 
     def __getitem__(self, idx):
         name = self.img_name_list[idx]
-        img = PIL.Image.open(os.path.join(self.voc12_root, 'JPEGImages', name + '.jpg')).convert("RGB")
+        img = PIL.Image.open(os.path.join(self.data_root, 'JPEGImages', name + '.jpg')).convert("RGB")
         label = torch.from_numpy(self.label_list[idx])
 
         rounded_size = (
@@ -175,20 +170,20 @@ def build_dataset(is_train, data_set, args, gen_attn=False):
     nb_classes = None
 
     if data_set == 'VOC12':
-        dataset = VOC12Dataset(img_name_list_path=args.img_list, voc12_root=args.data_path,
+        dataset = VOC12Dataset(data_root=args.data_path,
                                train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 20
     elif data_set == 'VOC12MS':
-        dataset = VOC12DatasetMS(img_name_list_path=args.img_ms_list, voc12_root=args.data_path,
+        dataset = VOC12DatasetMS(img_name_list_path=args.img_ms_list, data_root=args.data_path,
                                  scales=tuple(args.scales),
                                  train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 20
     elif data_set == 'COCO':
-        dataset = COCOClsDataset(img_name_list_path=args.img_list, coco_root=args.data_path,
+        dataset = COCOClsDataset(data_root=args.data_path,
                                  train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 90
     elif data_set == 'COCOMS':
-        dataset = COCOClsDatasetMS(img_name_list_path=args.img_ms_list, coco_root=args.data_path,
+        dataset = COCOClsDatasetMS(img_name_list_path=args.img_ms_list, data_root=args.data_path,
                                    scales=tuple(args.scales),
                                    train=is_train, gen_attn=gen_attn, transform=transform)
         nb_classes = 90
