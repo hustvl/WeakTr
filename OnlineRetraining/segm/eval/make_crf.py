@@ -118,12 +118,18 @@ if __name__ == '__main__':
     parser.add_argument("--type", default="npy", type=str)
 
     args = parser.parse_args()
-    if "voc12" in args.data_path:
-        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
+    if args.dataset == "voc12":
+        args.data_path = Path(args.data_path) / "voc12" if "voc12" not in args.data_path else args.data_path
+        args.data_path = Path(args.data_path) / "VOCdevkit" / "VOC2012"
+        args.gt_folder = args.data_path / "SegmentationClassAug"
+        args.img_path = args.data_path / "JPEGImages"
+        args.list = os.path.join(args.data_path / "ImageSets" / "Segmentation", args.list)
 
-    args.gt_folder = os.path.join(args.data_path, args.gt_folder)
-    args.img_path = os.path.join(args.data_path, args.img_path)
-    args.list = os.path.join(args.data_path, args.list)
+    if args.dataset == "coco":
+        args.data_path = Path(args.data_path) / "coco" if "coco" not in args.data_path else args.data_path
+        args.gt_folder = args.data_path / "voc_format" / "class_labels"
+        args.img_path = args.data_path / "images"
+        args.list = os.path.join(args.data_path / "voc_format", args.list)
 
     df = pd.read_csv(args.list, names=['filename'], converters={"filename": str})
     name_list = df['filename'].values

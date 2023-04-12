@@ -25,7 +25,7 @@ class COCODataset(BaseMMSeg):
 
     def update_default_config(self, config):
         root_dir = dataset_dir()
-        path = Path(root_dir)
+        path = Path(root_dir) / "coco"
         config.data_root = path
         if self.split == "train":
             config.data.train.data_root = path

@@ -285,11 +285,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if "voc12" in args.data_path:
-        args.data_path = os.path.join(args.data_path, "VOCdevkit/VOC2012")
-
-    args.gt_dir = os.path.join(args.data_path, args.gt_dir)
-    args.img_dir = os.path.join(args.data_path, args.img_dir)
+    if "voc12" in args.list:
+        args.data_path = Path(args.data_path) / "voc12" if "voc12" not in args.data_path else args.data_path
+        args.data_path = Path(args.data_path) / "VOCdevkit" / "VOC2012"
+        args.gt_dir = args.data_path / "SegmentationClassAug"
+        args.img_dir = args.data_path / "JPEGImages"
+    if "coco" in args.list:
+        args.data_path = Path(args.data_path) / "coco" if "coco" not in args.data_path else args.data_path
+        args.gt_dir = args.data_path / "voc_format" / "class_labels"
+        args.img_dir = args.data_path / "images"
 
     if args.type == 'npy':
         assert args.t is not None or args.curve

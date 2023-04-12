@@ -213,7 +213,7 @@ def eval_dataset(
 @click.option("--blend/--no-blend", default=True, is_flag=True)
 @click.option("--window-size", default=None, type=int)
 @click.option("--window-stride", default=None, type=int)
-@click.option("--window-batch-size", default=4, type=int)
+@click.option("--window-batch-size", default=1, type=int)
 @click.option("--save-images/--no-save-images", default=False, is_flag=True)
 @click.option("-frac-dataset", "--frac-dataset", default=1.0, type=float)
 @click.option("--local_rank", type=int, default=None)
