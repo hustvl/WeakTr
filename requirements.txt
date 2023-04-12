@@ -4,3 +4,4 @@ opencv-python
 mlflow
 pycocotools
 einops
+tqdm

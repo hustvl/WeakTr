@@ -187,8 +187,8 @@ python main.py --model deit_small_WeakTr_patch16_224 \
 python evaluation.py --list coco/train_id.txt \
                      --data-path data \
                      --type npy \
-                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
-                     --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
+                     --predict_dir WeakTr_results_coco/WeakTr/attn-patchrefine-npy-ms \
+                     --out-dir WeakTr_results_coco/WeakTr/pseudo-mask-ms-crf \
                      --t 42 \
                      --out-crf
 ```
