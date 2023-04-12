@@ -163,6 +163,7 @@ def main(
         version="normal",
         resume=resume,
         layer_decay=layer_decay,
+        gradientclipping=gc,
         dataset_kwargs=dict(
             dataset=dataset,
             image_size=im_size,
@@ -197,7 +198,6 @@ def main(
         clip_kwargs=dict(
             start_value=start_value,
             patch_size=patch_size,
-            gradientclipping=gc
         ),
         net_kwargs=model_cfg,
         amp=amp,

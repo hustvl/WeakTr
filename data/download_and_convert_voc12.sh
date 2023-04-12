@@ -77,10 +77,8 @@ FILENAME_TEST="VOC2012test.tar"
 
 download_and_uncompress "${BASE_URL}" "${FILENAME_TEST}" "."
 
-download_and_uncompress "${BASE_URL}" "${FILENAME_AUG}" "./VOCdevkit/VOC2012"
 wget -P "./VOCdevkit/VOC2012/ImageSets/Segmentation" "https://gist.githubusercontent.com/sun11/2dbda6b31acc7c6292d14a872d0c90b7/raw/5f5a5270089239ef2f6b65b1cc55208355b5acca/trainaug.txt"
 
-cd ..
 rm ${FILENAME} # remove tar file
 rm ${FILENAME_TEST} # remove tar file
-rm ${FILENAME_AUG} # remove tar file
+

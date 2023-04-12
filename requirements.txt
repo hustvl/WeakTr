@@ -3,3 +3,4 @@ scikit-learn
 opencv-python
 mlflow
 pycocotools
+einops
