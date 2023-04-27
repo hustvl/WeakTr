@@ -294,7 +294,7 @@ If you find this repository/work helpful in your research, welcome to cite the p
 ```
 @article{zhu2023weaktr,
       title={WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation}, 
-      author={Lianghui Zhu and Yingyue Li and Jieming Fang and Yan Liu and Hao Xin and Wenyu Liu and Xinggang Wang},
+      author={Lianghui Zhu and Yingyue Li and Jiemin Fang and Yan Liu and Hao Xin and Wenyu Liu and Xinggang Wang},
       year={2023},
       journal={arxiv:2304.01184},
 }
