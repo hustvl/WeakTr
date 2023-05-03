@@ -176,3 +176,4 @@ colorful.py
 /OnlineRetraining/val_tmp.py
 mlruns/*
 MCTformerV2_results/*
+WeakTr_results/*
