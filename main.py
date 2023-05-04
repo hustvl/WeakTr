@@ -290,7 +290,7 @@ def main(args):
     )
     model = create_model(**model_params)
 
-    if args.finetune:
+    if args.finetune and not args.gen_attention_maps:
         if args.finetune.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.finetune, map_location='cpu', check_hash=True)
