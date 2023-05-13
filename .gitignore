@@ -177,3 +177,5 @@ colorful.py
 mlruns/*
 MCTformerV2_results/*
 WeakTr_results/*
+OnlineRetraining/pus*
+OnlineRetraining/seg*
