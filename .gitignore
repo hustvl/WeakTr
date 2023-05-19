@@ -176,6 +176,7 @@ colorful.py
 /OnlineRetraining/val_tmp.py
 mlruns/*
 MCTformerV2_results/*
+MCTformerV2_coco_results/*
 WeakTr_results/*
 OnlineRetraining/mlruns/*
 OnlineRetraining/pus*
