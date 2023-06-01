@@ -184,16 +184,16 @@ def generate_attention_maps_ms(data_loader, model, device, args, epoch=None):
 
                 cams = \
                     F.interpolate(cams, size=(w_orig, h_orig), mode='bilinear', align_corners=False)[0]
-                cams = cams.cpu().numpy() * target.clone().view(args.nb_classes, 1, 1).cpu().numpy()
+                cams = cams * target.clone().view(args.nb_classes, 1, 1)
 
                 if s % 2 == 1:
-                    cams = np.flip(cams, axis=-1)
+                    cams = torch.flip(cams, dims=[-1])
+
                 cam_list.append(cams)
 
-            sum_cam = np.sum(cam_list, axis=0)
-            sum_cam = torch.from_numpy(sum_cam)
-            sum_cam = sum_cam.unsqueeze(0).to(device)
-
+            sum_cam = torch.sum(torch.stack(cam_list), dim=0)
+            sum_cam = sum_cam.unsqueeze(0)
+            
             output = torch.sigmoid(output)
 
         if args.visualize_cls_attn:
