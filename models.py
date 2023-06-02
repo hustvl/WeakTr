@@ -8,16 +8,18 @@ import torch.nn.functional as F
 
 import math
 
-from AAF import AAF
+from AAF import *
 
 __all__ = [
-    'deit_small_WeakTr_patch16_224',
+    'deit_small_WeakTr_patch16_224', 'deit_small_WeakT_AAF_AttnFeat_patch16_224', 
 ]
 
 
 class WeakTr(VisionTransformer):
-    def __init__(self, depth=12, num_heads=6, reduction=4, pool="avg", *args, **kwargs):
-        super().__init__(depth=depth, num_heads=num_heads, *args, **kwargs)
+    def __init__(self, depth=12, num_heads=6, reduction=4, pool="avg", 
+                 embed_dim=384, attn_feat=False, AdaptiveAttentionFusion=None, 
+                 feat_reduction=None, *args, **kwargs):
+        super().__init__(embed_dim=embed_dim, depth=depth, num_heads=num_heads, *args, **kwargs)
         self.head = nn.Conv2d(self.embed_dim, self.num_classes, kernel_size=3, stride=1, padding=1)
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.head.apply(self._init_weights)
@@ -29,7 +31,15 @@ class WeakTr(VisionTransformer):
         trunc_normal_(self.pos_embed, std=.02)
         print(self.training)
 
-        self.adaptive_attention_fusion = AAF(depth * num_heads, reduction, pool)
+        aaf_params = dict(channel=depth*num_heads, reduction=reduction, pool=pool)
+        if feat_reduction is not None:
+            aaf_params["feat_reduction"] = feat_reduction      
+            aaf_params["feats_channel"] = embed_dim//num_heads       
+            
+        self.adaptive_attention_fusion = AdaptiveAttentionFusion(**aaf_params)
+
+
+        self.attn_feat = attn_feat
 
     def interpolate_pos_encoding(self, x, w, h):
         npatch = x.shape[1] - self.num_classes
@@ -63,16 +73,18 @@ class WeakTr(VisionTransformer):
         x = x + self.interpolate_pos_encoding(x, w, h)
         x = self.pos_drop(x)
         attn_weights = []
+        attn_feats = []
 
         for i, blk in enumerate(self.blocks):
             x, weights_i = blk(x)
+            attn_feats.append(x)
             attn_weights.append(weights_i)
 
-        return x[:, 0:self.num_classes], x[:, self.num_classes:], attn_weights
+        return x[:, 0:self.num_classes], x[:, self.num_classes:], attn_weights, attn_feats
 
     def forward(self, x, return_att=False, attention_type='fused'):
         w, h = x.shape[2:]
-        x_cls, x_patch, attn_weights = self.forward_features(x)
+        x_cls, x_patch, attn_weights, attn_feats = self.forward_features(x)
         n, p, c = x_patch.shape
         if w != h:
             w0 = w // self.patch_embed.patch_size[0]
@@ -86,20 +98,29 @@ class WeakTr(VisionTransformer):
         coarse_cam_pred = self.avgpool(x_patch).squeeze(3).squeeze(2)
 
         attn_weights = torch.stack(attn_weights)  # 12 * B * H * N * N
+        attn_feats = torch.stack(attn_feats)  # 12 * B * N * C
 
         attn_weights_detach = attn_weights.detach().clone()
         k, b, h, n, m = attn_weights_detach.shape
         attn_weights_detach = attn_weights_detach.permute([1, 2, 0, 3, 4]).contiguous()
         attn_weights_detach = attn_weights_detach.view(b, h * k, n, m)
-        weighted_attn_maps = self.adaptive_attention_fusion(attn_weights_detach)
-        weighted_attn_maps = weighted_attn_maps.view(b, h, k, n, m)
+
+        if self.attn_feat:
+            attn_feats_detach = attn_feats.detach().clone()
+            k, b, n, c = attn_feats_detach.shape
+            attn_feats_detach = attn_feats_detach.view(k, b, n, -1, h)
+            attn_feats_detach = attn_feats_detach.permute([1, 4, 0, 2, 3]).contiguous()
+            attn_feats_detach = attn_feats_detach.view(b, h * k, n, -1)
+            cross_attn_map, patch_attn_map = self.adaptive_attention_fusion(attn_feats_detach, attn_weights_detach)    
+        else:
+            cross_attn_map, patch_attn_map = self.adaptive_attention_fusion(attn_weights_detach)
 
         coarse_cam = x_patch.detach().clone()  # B * C * 14 * 14
         coarse_cam = F.relu(coarse_cam)
 
         n, c, h, w = coarse_cam.shape
 
-        cross_attn = weighted_attn_maps.mean(1).mean(1)[:, 0:self.num_classes, self.num_classes:].reshape([n, c, h, w])
+        cross_attn = cross_attn_map.mean(1)[:, 0:self.num_classes, self.num_classes:].reshape([n, c, h, w])
 
         if attention_type == 'fused':
             cams = cross_attn * coarse_cam  # B * C * 14 * 14
@@ -108,7 +129,7 @@ class WeakTr(VisionTransformer):
         else:
             cams = cross_attn
 
-        patch_attn = weighted_attn_maps.mean(1).mean(1)[:, self.num_classes:, self.num_classes:]
+        patch_attn = patch_attn_map.mean(1)[:, self.num_classes:, self.num_classes:]
 
         fine_cam = torch.matmul(patch_attn.unsqueeze(1), cams.view(cams.shape[0],
                                                                          cams.shape[1], -1, 1)). \
@@ -130,6 +151,15 @@ class WeakTr(VisionTransformer):
 def deit_small_WeakTr_patch16_224(pretrained=False, **kwargs):
     model = WeakTr(
         patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), AdaptiveAttentionFusion=AAF, **kwargs)
+    model.default_cfg = _cfg()
+    return model
+
+@register_model
+def deit_small_WeakTr_AAF_AttnFeat_patch16_224(pretrained=False, **kwargs):
+    model = WeakTr(
+        patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), AdaptiveAttentionFusion=AAF_AttnFeat,
+        attn_feat=True, **kwargs)
     model.default_cfg = _cfg()
     return model

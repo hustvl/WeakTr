@@ -11,7 +11,7 @@ import random
 import numpy as np
 
 
-def fix_random_seeds(seed=31, if_warning_only=False):
+def fix_random_seeds(seed=31, if_warning_only=False, deterministic=True):
     """
     Fix random seeds.
     """
@@ -20,14 +20,15 @@ def fix_random_seeds(seed=31, if_warning_only=False):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
-
-    if if_warning_only:
-        # cuDNN convolution 使用确定算法
-        torch.backends.cudnn.deterministic = True
-    else:
-        # torch.use_deterministic_algorithms(True, warn_only=if_warning_only)
-        # warn_only=True 遇上不确定算法只返回warning
-        torch.use_deterministic_algorithms(True)
+    
+    if deterministic:
+        if if_warning_only:
+            # cuDNN convolution 使用确定算法
+            torch.backends.cudnn.deterministic = True
+        else:
+            # torch.use_deterministic_algorithms(True, warn_only=if_warning_only)
+            # warn_only=True 遇上不确定算法只返回warning
+            torch.use_deterministic_algorithms(True)
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
     g = torch.Generator()
@@ -262,3 +263,21 @@ def init_distributed_mode(args):
                                          world_size=args.world_size, rank=args.rank)
     torch.distributed.barrier()
     setup_for_distributed(args.rank == 0)
+
+
+def add_weight_decay(model, weight_decay=1e-5, skip_list=(),
+                     filter_bias_and_bn=True):
+    decay = []
+    no_decay = []
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue  # frozen weights
+        if filter_bias_and_bn and (len(param.shape) == 1 or name.endswith(".bias")):
+            no_decay.append(param)
+        elif name in skip_list:
+            no_decay.append(param)
+        else:
+            decay.append(param)
+    return [
+        {'params': no_decay, 'weight_decay': 0.},
+        {'params': decay, 'weight_decay': weight_decay}]

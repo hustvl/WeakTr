@@ -34,6 +34,8 @@ def get_args_parser():
     parser.add_argument('--epochs', default=60, type=int)
     parser.add_argument('--seed', type=int, default=504)
     parser.add_argument('--epoch-save-ckpt', action="store_true")
+    parser.add_argument('--deterministic', action="store_true", default=True)
+    parser.add_argument('--no-deterministic', action="store_false", dest="deterministic")
 
     # distributed parameters
     parser.add_argument('--rank', default=0, type=int)
@@ -54,9 +56,10 @@ def get_args_parser():
     parser.add_argument('--drop-path', type=float, default=0.1, metavar='PCT',
                         help='Drop path rate (default: 0.1)')
 
-    # SE parameters
+    # AAF parameters
     parser.add_argument("--reduction", type=float, default=4)
     parser.add_argument("--pool-type", type=str, default="avg")
+    parser.add_argument("--feat-reduction", default=8, type=int)
 
     # Optimizer parameters
     parser.add_argument('--opt', default='adamw', type=str, metavar='OPTIMIZER',
@@ -71,6 +74,12 @@ def get_args_parser():
                         help='SGD momentum (default: 0.9)')
     parser.add_argument('--weight-decay', type=float, default=0.05,
                         help='weight decay (default: 0.05)')
+    parser.add_argument('--filter-bias-and-bn', action='store_true', default=True)
+    parser.add_argument('--no-filter-bias-and-bn', action='store_false', dest='filter_bias_and_bn')
+
+    parser.add_argument('--skiplist', action='store_true', default=True)
+    parser.add_argument('--no-skiplist', action='store_false', dest='skiplist')
+    
     # Learning rate schedule parameters
     parser.add_argument('--sched', default='cosine', type=str, metavar='SCHEDULER',
                         help='LR scheduler (default: "cosine"')
@@ -156,7 +165,7 @@ def get_args_parser():
 
     parser.add_argument('--img-ms-list', type=str, default=None)
     parser.add_argument('--patch-attn-refine', action='store_true', default=True)
-    parser.add_argument('--no-patch-attn-refine', action='store_false', dest="patch-attn-refine")
+    parser.add_argument('--no-patch-attn-refine', action='store_false', dest="patch_attn_refine")
 
     parser.add_argument('--visualize-cls-attn', action='store_true', default=True)
     parser.add_argument('--no-visualize-cls-attn', action='store_false', dest="visualize-cls-attn")
@@ -210,7 +219,7 @@ def main(args):
     if_dataloader_reproduce = False
     if args.seed != None:
         if_dataloader_reproduce = True
-        g, worker_init_fn = utils.fix_random_seeds(args.seed, if_warning_only=(not args.input_size == 224))
+        g, worker_init_fn = utils.fix_random_seeds(args.seed, if_warning_only=(not args.input_size == 224), deterministic=args.deterministic)
     else:
         cudnn.benchmark = True
 
@@ -288,6 +297,8 @@ def main(args):
         reduction=args.reduction,
         pool=args.pool_type
     )
+    if "AttnFeat" in args.model:
+        model_params["feat_reduction"] = args.feat_reduction
     model = create_model(**model_params)
 
     if args.finetune and not args.gen_attention_maps:
@@ -348,7 +359,18 @@ def main(args):
 
     linear_scaled_lr = args.lr * args.batch_size * utils.get_world_size() / 512.0
     args.lr = linear_scaled_lr
-    optimizer = create_optimizer(args, model)
+
+    model_params = model.parameters()
+    if args.weight_decay and (args.skiplist or args.filter_bias_and_bn):
+        skip = {}
+        if hasattr(model, 'no_weight_decay') and args.skiplist:
+            skip = model.no_weight_decay()
+        from utils import add_weight_decay
+        model_params = add_weight_decay(model, args.weight_decay, skip,
+                                        args.filter_bias_and_bn)
+        args.weight_decay = 0.
+
+    optimizer = create_optimizer(args, model_params)
     loss_scaler = NativeScaler()
 
     lr_scheduler, _ = create_scheduler(args, optimizer)
