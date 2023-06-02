@@ -131,7 +131,8 @@ The folder structure is assumed to be:
 #### Pascal VOC 2012
 ```bash
 # Training
-python main.py  --model deit_small_WeakTr_patch16_224 \
+# WeakTrV1
+CUDA_VISIBLE_DEVICES=0 python main.py  --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12 \
                 --img-ms-list voc12/train_id.txt \
@@ -139,24 +140,59 @@ python main.py  --model deit_small_WeakTr_patch16_224 \
                 --output_dir WeakTr_results/WeakTr \
                 --lr 4e-4 \
 
+# WeakTrV2
+CUDA_VISIBLE_DEVICES=2 python main.py  --model deit_small_WeakTr_AAF_AttnFeat_patch16_224 \
+                --data-path data \
+                --data-set VOC12 \
+                --img-ms-list voc12/train_id.txt \
+                --cam-npy-dir WeakTr_results/WeakTrV2/attn-patchrefine-npy \
+                --output_dir WeakTr_results/WeakTrV2 \
+                --reduction 8 \
+                --pool-type max \
+                --lr 6e-4 \
+                --weight-decay 0.03 \
+                --no-deterministic \
+                --no-skiplist \
+                --no-filter-bias-and-bn \
+
 # Generate CAM
-python main.py --model deit_small_WeakTr_patch16_224 \
+CUDA_VISIBLE_DEVICES=0,1,2 python -m torch.distributed.launch --nproc_per_node=3 \
+main.py --model deit_small_WeakTr_AAF_AttnFeat_patch16_224 \
                 --data-path data \
                 --data-set VOC12MS \
                 --img-ms-list voc12/train_aug_id.txt \
-                --scales 1.0 0.8 1.2 \
+                --scales 1.0 1.2 \
                 --gen_attention_maps \
-                --cam-npy-dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
-                --output_dir WeakTr_results/WeakTr \
-                --resume WeakTr_results/WeakTr/checkpoint_best_mIoU.pth
-                
+                --cam-npy-dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
+                --output_dir WeakTr_results/WeakTrV2 \
+                --resume WeakTr_results/WeakTrV2/checkpoint_best_mIoU.pth \
+                --reduction 8 \
+                --pool-type max \
+
+python evaluation.py --list voc12/train_id.txt \
+                     --data-path data \
+                     --type npy \
+                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
+                     --curve True \
+                     --start 40 \
+
 # CRF post-processing
+python evaluation.py --list voc12/train_id.txt \
+                     --data-path data \
+                     --type npy \
+                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
+                     --out-dir WeakTr_results/WeakTrV2/pseudo-mask-ms-crf \
+                     --curve True \
+                     --out-crf \
+                     --start 40 \
+
+
 python evaluation.py --list voc12/train_aug_id.txt \
                      --data-path data \
                      --type npy \
-                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
-                     --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
-                     --t 42 \
+                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
+                     --out-dir WeakTr_results/WeakTrV2/pseudo-mask-ms-crf \
+                     --t 41 \
                      --out-crf
 
 ```
@@ -275,19 +311,20 @@ python -m segm.eval.make_crf \
 
 ### CAM Generation
 
-|     Dataset     |                          Checkpoint                          |                          CAM_Label                           | Train mIoU |
-| :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
-| Pascal VOC 2012 | [Google Drive](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1iDI7NPO0qrTz4dsnCtyGlPZxrAgp2U77/view?usp=share_link) |   69.0%    |
-|    COCO 2014    | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   41.9%    |
+|     Dataset     |     Method     |                          Checkpoint                          |                          CAM_Label                           | Train mIoU |
+| :-------------: | :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
+| Pascal VOC 2012 | WeakTrV1 | [Google Drive](https://drive.google.com/file/d/1TW6HSSOnhzdAHpUrarM8-nhJTV3MvIgM/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1iDI7NPO0qrTz4dsnCtyGlPZxrAgp2U77/view?usp=share_link) |   69.0%    |
+| Pascal VOC 2012 | WeakTrV2 | [Google Drive](https://drive.google.com/file/d/19XEmgQKuTZQ2YQTncgCnttvXeBPhW-B-/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1IPPEQlqh3lcKerX3vl-4vbB5UkowsKHc/view?usp=share_link) |   69.3%    |
+| COCO 2014 |    WeakTrV1    | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   41.9%    |
 
 ### Online Retraining
 
 |                        Dataset                        |                        Method                           |                                             Checkpoint                                             | Val mIoU | Pseudo-mask | Train mIoU |
 |:----------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:| :---------: | :--------: | :--------: |------------|
-|                           Pascal VOC 2012                           |                           WeakTr                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=share_link) | 74.0% | [Google Drive](https://drive.google.com/file/d/1Z6ioXhy6L4_2XMrj2dk7QiYPzZnWdbt-/view?usp=share_link) | 76.5%      |
-| Pascal VOC 2012 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/1m8bBxjrqstVwwUi2fAiqtRmIk6COTxGy/view?usp=share_link) | **78.4%** | [Google Drive](https://drive.google.com/file/d/1kEhlTVZvIqMGD5ck8UDTxWxXD7UMf3VZ/view?usp=share_link) | **80.3%**  |
-| COCO 2014 | WeakTr | [Google Drive](https://drive.google.com/file/d/1iZN0Gcg_uVRUgxlmQs7suAGjv6bsj4EX/view?usp=share_link) | 46.9% | [Google Drive](https://drive.google.com/file/d/1qZaiKqqAWFfY_-yxqcv8T29o8z9KytbJ/view?usp=share_link) | 48.9%      |
-| COCO 2014 | WeakTr![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/13Gr_S8pG42IWDwcvvLcPmSfCW_MSa8fL/view?usp=share_link) | **50.3%** | [Google Drive](https://drive.google.com/file/d/1p-t-4pPIpJZDmj-oJ16PKVG3Yu8sNiaF/view?usp=share_link) | **51.3%**  |
+|                           Pascal VOC 2012                           |                           WeakTrV1                           | [Google Drive](https://drive.google.com/file/d/11n5gKLVeq7yXgya17OodyKeAciUfc_Ax/view?usp=share_link) | 74.0% | [Google Drive](https://drive.google.com/file/d/1Z6ioXhy6L4_2XMrj2dk7QiYPzZnWdbt-/view?usp=share_link) | 76.5%      |
+| Pascal VOC 2012 | WeakTrV1![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/1m8bBxjrqstVwwUi2fAiqtRmIk6COTxGy/view?usp=share_link) | **78.4%** | [Google Drive](https://drive.google.com/file/d/1kEhlTVZvIqMGD5ck8UDTxWxXD7UMf3VZ/view?usp=share_link) | **80.3%**  |
+| COCO 2014 | WeakTrV1 | [Google Drive](https://drive.google.com/file/d/1iZN0Gcg_uVRUgxlmQs7suAGjv6bsj4EX/view?usp=share_link) | 46.9% | [Google Drive](https://drive.google.com/file/d/1qZaiKqqAWFfY_-yxqcv8T29o8z9KytbJ/view?usp=share_link) | 48.9%      |
+| COCO 2014 | WeakTrV1![](http://latex.codecogs.com/svg.latex?^{\dagger}) | [Google Drive](https://drive.google.com/file/d/13Gr_S8pG42IWDwcvvLcPmSfCW_MSa8fL/view?usp=share_link) | **50.3%** | [Google Drive](https://drive.google.com/file/d/1p-t-4pPIpJZDmj-oJ16PKVG3Yu8sNiaF/view?usp=share_link) | **51.3%**  |
 
 ## Citation
 If you find this repository/work helpful in your research, welcome to cite the paper and give a ⭐.
