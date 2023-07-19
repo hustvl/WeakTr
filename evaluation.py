@@ -175,12 +175,16 @@ def do_python_eval(predict_folder, gt_folder, name_list, num_cls=21, input_type=
     P_TP = []
     FP_ALL = []
     FN_ALL = []
+    Prediction = []
+    Recall = []
     for i in range(num_cls):
         IoU.append(TP[i] / (T[i] + P[i] - TP[i]))
         T_TP.append(T[i] / (TP[i]))
         P_TP.append(P[i] / (TP[i]))
         FP_ALL.append((P[i] - TP[i]) / (T[i] + P[i] - TP[i]))
         FN_ALL.append((T[i] - TP[i]) / (T[i] + P[i] - TP[i]))
+        Prediction.append(TP[i] / P[i])
+        Recall.append(TP[i] / T[i])
     loglist = {}
     for i in range(num_cls):
         if num_cls == 21:
@@ -193,6 +197,10 @@ def do_python_eval(predict_folder, gt_folder, name_list, num_cls=21, input_type=
     loglist['FP'] = fp * 100
     fn = np.nanmean(np.array(FN_ALL))
     loglist['FN'] = fn * 100
+    prediction = np.nanmean(np.array(Prediction))
+    loglist['Prediction'] = prediction * 100
+    recall = np.nanmean(np.array(Recall))
+    loglist['Recall'] = recall * 100
     if printlog:
         for i in range(num_cls):
             if num_cls == 21:
@@ -209,6 +217,7 @@ def do_python_eval(predict_folder, gt_folder, name_list, num_cls=21, input_type=
         print('%11s:%7.3f%%' % ('mIoU', miou * 100))
         print('\n')
         print(f'FP = {fp * 100}, FN = {fn * 100}')
+        print(f'Prediction = {prediction * 100}, Recall = {recall * 100}')
     return loglist
 
 
