@@ -16,11 +16,11 @@ WeakTr
 │   ├── download_and_convert_voc12.sh
 │   ├── voc12
 │   │   ├── VOCdevkit
-│   │   ├── VOC2012
-│   │   ├── JPEGImages
-│   │   ├── SegmentationClass
-│   │   ├── SegmentationClassAug
-│   │   ├── WeakTr_CAMlb_wCRF
+│   │   │   ├── VOC2012
+│   │   │   │   ├── JPEGImages
+│   │   │   │   ├── SegmentationClass
+│   │   │   │   ├── SegmentationClassAug
+│   │   │   │   ├── WeakTr_CAMlb_wCRF
 ├── voc12
 │   ├── cls_labels.npy
 │   ├── train_aug_id.txt
@@ -45,11 +45,11 @@ WeakTr
 │   ├── coco
 │   │   ├── images
 │   │   ├── voc_format
-│   │   ├── class_labels
-│   │   ├── train.txt
-│   │   ├── val.txt
-│   │   ├── val_5000.txt
-│   │   ├── WeakTr_CAMlb_wCRF_COCO
+│   │   │   ├── class_labels
+│   │   │   ├── train.txt
+│   │   │   ├── val.txt
+│   │   │   ├── val_5000.txt
+│   │   │   ├── WeakTr_CAMlb_wCRF_COCO
 ├── voc12
 │   ├── cls_labels.npy
 │   ├── train_aug_id.txt
