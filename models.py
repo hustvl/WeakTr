@@ -11,13 +11,14 @@ import math
 from AAF import *
 
 __all__ = [
-    'deit_small_WeakTr_patch16_224', 'deit_small_WeakT_AAF_AttnFeat_patch16_224', 
+    'deit_small_WeakTr_patch16_224', 
+    'deit_small_WeakTr_AAF_RandWeight_patch16_224'
 ]
 
 
 class WeakTr(VisionTransformer):
     def __init__(self, depth=12, num_heads=6, reduction=4, pool="avg", 
-                 embed_dim=384, attn_feat=False, AdaptiveAttentionFusion=None, 
+                 embed_dim=384, AdaptiveAttentionFusion=None, 
                  feat_reduction=None, *args, **kwargs):
         super().__init__(embed_dim=embed_dim, depth=depth, num_heads=num_heads, *args, **kwargs)
         self.head = nn.Conv2d(self.embed_dim, self.num_classes, kernel_size=3, stride=1, padding=1)
@@ -31,15 +32,14 @@ class WeakTr(VisionTransformer):
         trunc_normal_(self.pos_embed, std=.02)
         print(self.training)
 
-        aaf_params = dict(channel=depth*num_heads, reduction=reduction, pool=pool)
+        aaf_params = dict(channel=depth*num_heads, reduction=reduction)
         if feat_reduction is not None:
             aaf_params["feat_reduction"] = feat_reduction      
             aaf_params["feats_channel"] = embed_dim//num_heads       
+            aaf_params["pool"] = pool
             
         self.adaptive_attention_fusion = AdaptiveAttentionFusion(**aaf_params)
 
-
-        self.attn_feat = attn_feat
 
     def interpolate_pos_encoding(self, x, w, h):
         npatch = x.shape[1] - self.num_classes
@@ -105,15 +105,12 @@ class WeakTr(VisionTransformer):
         attn_weights_detach = attn_weights_detach.permute([1, 2, 0, 3, 4]).contiguous()
         attn_weights_detach = attn_weights_detach.view(b, h * k, n, m)
 
-        if self.attn_feat:
-            attn_feats_detach = attn_feats.detach().clone()
-            k, b, n, c = attn_feats_detach.shape
-            attn_feats_detach = attn_feats_detach.view(k, b, n, -1, h)
-            attn_feats_detach = attn_feats_detach.permute([1, 4, 0, 2, 3]).contiguous()
-            attn_feats_detach = attn_feats_detach.view(b, h * k, n, -1)
-            cross_attn_map, patch_attn_map = self.adaptive_attention_fusion(attn_feats_detach, attn_weights_detach)    
-        else:
-            cross_attn_map, patch_attn_map = self.adaptive_attention_fusion(attn_weights_detach)
+        attn_feats_detach = attn_feats.detach().clone()
+        k, b, n, c = attn_feats_detach.shape
+        attn_feats_detach = attn_feats_detach.view(k, b, n, -1, h)
+        attn_feats_detach = attn_feats_detach.permute([1, 4, 0, 2, 3]).contiguous()
+        attn_feats_detach = attn_feats_detach.view(b, h * k, n, -1)
+        cross_attn_map, patch_attn_map = self.adaptive_attention_fusion(attn_feats_detach, attn_weights_detach)
 
         coarse_cam = x_patch.detach().clone()  # B * C * 14 * 14
         coarse_cam = F.relu(coarse_cam)
@@ -156,10 +153,9 @@ def deit_small_WeakTr_patch16_224(pretrained=False, **kwargs):
     return model
 
 @register_model
-def deit_small_WeakTr_AAF_AttnFeat_patch16_224(pretrained=False, **kwargs):
+def deit_small_WeakTr_AAF_RandWeight_patch16_224(pretrained=False, **kwargs):
     model = WeakTr(
         patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, eps=1e-6), AdaptiveAttentionFusion=AAF_AttnFeat,
-        attn_feat=True, **kwargs)
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), AdaptiveAttentionFusion=AAF_RandWeight,**kwargs)
     model.default_cfg = _cfg()
     return model

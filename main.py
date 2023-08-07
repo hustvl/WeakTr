@@ -74,11 +74,6 @@ def get_args_parser():
                         help='SGD momentum (default: 0.9)')
     parser.add_argument('--weight-decay', type=float, default=0.05,
                         help='weight decay (default: 0.05)')
-    parser.add_argument('--filter-bias-and-bn', action='store_true', default=True)
-    parser.add_argument('--no-filter-bias-and-bn', action='store_false', dest='filter_bias_and_bn')
-
-    parser.add_argument('--skiplist', action='store_true', default=True)
-    parser.add_argument('--no-skiplist', action='store_false', dest='skiplist')
     
     # Learning rate schedule parameters
     parser.add_argument('--sched', default='cosine', type=str, metavar='SCHEDULER',
@@ -179,7 +174,7 @@ def get_args_parser():
     parser.add_argument('--if_eval_miou', action='store_true', default=True)
     parser.add_argument('--no-if_eval_miou', action='store_false', dest="if_eval_miou")
 
-    parser.add_argument('--eval_miou_threshold_start', type=int, default=30)
+    parser.add_argument('--eval_miou_threshold_start', type=int, default=40)
     parser.add_argument('--eval_miou_threshold_end', type=int, default=60)
 
     return parser
@@ -219,7 +214,7 @@ def main(args):
     if_dataloader_reproduce = False
     if args.seed != None:
         if_dataloader_reproduce = True
-        g, worker_init_fn = utils.fix_random_seeds(args.seed, if_warning_only=(not args.input_size == 224), deterministic=args.deterministic)
+        g, worker_init_fn = utils.fix_random_seeds(args.seed)
     else:
         cudnn.benchmark = True
 
@@ -295,11 +290,13 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
         reduction=args.reduction,
-        pool=args.pool_type
     )
-    if "AttnFeat" in args.model:
+    if "RandWeight" not in args.model:
+        model_params["pool"] = args.pool_type
         model_params["feat_reduction"] = args.feat_reduction
     model = create_model(**model_params)
+    if "RandWeight" in args.model and not args.gen_attention_maps:
+        np.save(os.path.join(args.output_dir, 'query.npy'), model.adaptive_attention_fusion.query.cpu().numpy())
 
     if args.finetune and not args.gen_attention_maps:
         if args.finetune.startswith('https'):
@@ -360,17 +357,7 @@ def main(args):
     linear_scaled_lr = args.lr * args.batch_size * utils.get_world_size() / 512.0
     args.lr = linear_scaled_lr
 
-    model_params = model.parameters()
-    if args.weight_decay and (args.skiplist or args.filter_bias_and_bn):
-        skip = {}
-        if hasattr(model, 'no_weight_decay') and args.skiplist:
-            skip = model.no_weight_decay()
-        from utils import add_weight_decay
-        model_params = add_weight_decay(model, args.weight_decay, skip,
-                                        args.filter_bias_and_bn)
-        args.weight_decay = 0.
-
-    optimizer = create_optimizer(args, model_params)
+    optimizer = create_optimizer(args, model.parameters())
     loss_scaler = NativeScaler()
 
     lr_scheduler, _ = create_scheduler(args, optimizer)
@@ -383,6 +370,8 @@ def main(args):
     if args.gen_attention_maps:
         checkpoint = torch.load(args.resume, map_location='cpu')
         model.load_state_dict(checkpoint['model'], strict=False)
+        if "RandWeight" in args.model:
+            model.adaptive_attention_fusion.query = torch.from_numpy(np.load(os.path.join(args.output_dir, 'query.npy'))).to(device)
         if args.distributed:
             model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank, find_unused_parameters=True)
         generate_attention_maps_ms(data_loader_train_, model, device, args)

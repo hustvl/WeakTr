@@ -2,9 +2,10 @@ from torch import nn
 import torch
 
 
+# 1. using attention feature to generate dynamic weight
 class AAF(nn.Module):
-    def __init__(self, channel, reduction=16, pool="avg"):
-        super(AAF, self).__init__()
+    def __init__(self, channel, reduction=16, feats_channel=64, feat_reduction=8, pool="avg"):
+        super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         if pool == "max":
             self.avg_pool = nn.AdaptiveMaxPool2d(1)
@@ -15,22 +16,6 @@ class AAF(nn.Module):
             nn.Linear(int(channel / reduction), channel, bias=False),
             nn.Sigmoid()
         )
-
-    def forward_weight(self, x):
-        b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.attn_head_ffn(y).view(b, c, -1, 1)
-
-        return y
-        
-    def forward(self, x):
-        weight = self.forward_weight(x)
-        return x * weight.expand_as(x), x * weight.expand_as(x)
-
-# 1. using attention feature to generate dynamic weight
-class AAF_AttnFeat(AAF):
-    def __init__(self, channel, feats_channel=64, feat_reduction=8, **kwargs):
-        super(AAF_AttnFeat, self).__init__(channel, **kwargs)
         self.attn_feat_ffn = nn.Sequential(
                                     nn.Linear(feats_channel, int(feats_channel / feat_reduction)),
                                     nn.Linear(int(feats_channel / feat_reduction), 1),
@@ -56,3 +41,17 @@ class AAF_AttnFeat(AAF):
     def forward(self, attn_feat, x):
         weight = self.forward_weight(attn_feat)
         return x * weight.expand_as(x), x * weight.expand_as(x)
+
+
+# 2. using randomly initialized weight to generate dynamic weight
+class AAF_RandWeight(AAF):
+    def __init__(self, channel, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.query = torch.randn(1, channel, requires_grad=False).cuda()
+    
+    def forward_weight(self, x):
+        b, c, n, m = x.size() # batchsize, attn heads num=72, class tokens + patch tokens, embedding_dim=64
+
+        attn_weight = self.attn_head_ffn(self.query.expand(b, -1)).unsqueeze(2).unsqueeze(3)
+
+        return attn_weight

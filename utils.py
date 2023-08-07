@@ -21,14 +21,6 @@ def fix_random_seeds(seed=31, if_warning_only=False, deterministic=True):
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     
-    if deterministic:
-        if if_warning_only:
-            # cuDNN convolution 使用确定算法
-            torch.backends.cudnn.deterministic = True
-        else:
-            # torch.use_deterministic_algorithms(True, warn_only=if_warning_only)
-            # warn_only=True 遇上不确定算法只返回warning
-            torch.use_deterministic_algorithms(True)
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
     g = torch.Generator()

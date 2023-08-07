@@ -5,48 +5,35 @@
 ### Pascal VOC 2012
 ```bash
 # Training
-# WeakTrV1
-CUDA_VISIBLE_DEVICES=0 python main.py  --model deit_small_WeakTr_patch16_224 \
+CUDA_VISIBLE_DEVICES=2 python main.py  --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12 \
                 --img-ms-list voc12/train_id.txt \
                 --cam-npy-dir WeakTr_results/WeakTr/attn-patchrefine-npy \
                 --output_dir WeakTr_results/WeakTr \
-                --lr 4e-4 \
-
-# WeakTrV2
-CUDA_VISIBLE_DEVICES=2 python main.py  --model deit_small_WeakTr_AAF_AttnFeat_patch16_224 \
-                --data-path data \
-                --data-set VOC12 \
-                --img-ms-list voc12/train_id.txt \
-                --cam-npy-dir WeakTr_results/WeakTrV2/attn-patchrefine-npy \
-                --output_dir WeakTr_results/WeakTrV2 \
                 --reduction 8 \
                 --pool-type max \
                 --lr 6e-4 \
                 --weight-decay 0.03 \
-                --no-deterministic \
-                --no-skiplist \
-                --no-filter-bias-and-bn \
 
 # Generate CAM
-CUDA_VISIBLE_DEVICES=0,1,2 python -m torch.distributed.launch --nproc_per_node=3 \
-main.py --model deit_small_WeakTr_AAF_AttnFeat_patch16_224 \
+CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --nproc_per_node=1 --master_port=14898 \
+main.py --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12MS \
-                --img-ms-list voc12/train_aug_id.txt \
+                --img-ms-list voc12/train_id.txt \
                 --scales 1.0 1.2 \
                 --gen_attention_maps \
-                --cam-npy-dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
-                --output_dir WeakTr_results/WeakTrV2 \
-                --resume WeakTr_results/WeakTrV2/checkpoint_best_mIoU.pth \
+                --cam-npy-dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
+                --output_dir WeakTr_results/WeakTr \
+                --resume WeakTr_results/WeakTr/checkpoint_best_mIoU.pth \
                 --reduction 8 \
                 --pool-type max \
 
 python evaluation.py --list voc12/train_id.txt \
                      --data-path data \
                      --type npy \
-                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
+                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
                      --curve True \
                      --start 40 \
 
@@ -54,8 +41,8 @@ python evaluation.py --list voc12/train_id.txt \
 python evaluation.py --list voc12/train_id.txt \
                      --data-path data \
                      --type npy \
-                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
-                     --out-dir WeakTr_results/WeakTrV2/pseudo-mask-ms-crf \
+                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
+                     --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
                      --curve True \
                      --out-crf \
                      --start 40 \
@@ -64,8 +51,8 @@ python evaluation.py --list voc12/train_id.txt \
 python evaluation.py --list voc12/train_aug_id.txt \
                      --data-path data \
                      --type npy \
-                     --predict_dir WeakTr_results/WeakTrV2/attn-patchrefine-npy-ms \
-                     --out-dir WeakTr_results/WeakTrV2/pseudo-mask-ms-crf \
+                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
+                     --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
                      --t 41 \
                      --out-crf
 
