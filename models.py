@@ -76,8 +76,8 @@ class WeakTr(VisionTransformer):
         attn_feats = []
 
         for i, blk in enumerate(self.blocks):
-            x, weights_i = blk(x)
-            attn_feats.append(x)
+            x, weights_i, feat = blk(x)
+            attn_feats.append(feat)
             attn_weights.append(weights_i)
 
         return x[:, 0:self.num_classes], x[:, self.num_classes:], attn_weights, attn_feats

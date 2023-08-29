@@ -55,7 +55,7 @@ Besides, we propose a ViT-based gradient clipping decoder for online retraining 
 
 |     Dataset     |     Method     |                          Checkpoint                          |                          CAM_Label                           | Train mIoU |
 | :-------------: | :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
-| Pascal VOC 2012 | WeakTr | [Google Drive](https://drive.google.com/file/d/19XEmgQKuTZQ2YQTncgCnttvXeBPhW-B-/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/12fO9K7uBFT08lUQb6rCj9wp_Mf8efa7F/view?usp=drive_link) |   69.3%    |
+| Pascal VOC 2012 | WeakTr | [Google Drive](https://drive.google.com/file/d/1uUHGLIDFm49Gh41Ddc8_T93-bRWnJzeF/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1zv3Wq056aHdUaaKEuychGnedXqkMLr5y/view?usp=share_link) |   69.4%    |
 | COCO 2014 |    WeakTr    | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   41.9%    |
 
 ### Step2: Online Retraining with Gradient Clipping Decoder

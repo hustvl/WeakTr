@@ -21,7 +21,7 @@ CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --nproc_per_node=1 --m
 main.py --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12MS \
-                --img-ms-list voc12/train_id.txt \
+                --img-ms-list voc12/train_aug_id.txt \
                 --scales 1.0 1.2 \
                 --gen_attention_maps \
                 --cam-npy-dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
@@ -53,7 +53,7 @@ python evaluation.py --list voc12/train_aug_id.txt \
                      --type npy \
                      --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
                      --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
-                     --t 41 \
+                     --t 43 \
                      --out-crf
 
 ```

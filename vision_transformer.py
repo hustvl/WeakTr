@@ -121,7 +121,7 @@ class Block(nn.Module):
         o, weights = self.attn(self.norm1(x))
         x = x + self.drop_path(o)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
-        return x, weights
+        return x, weights, o
 
 
 class PatchEmbed(nn.Module):
