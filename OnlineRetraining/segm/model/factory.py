@@ -10,13 +10,23 @@ from timm.models.vision_transformer import default_cfgs
 from timm.models.registry import register_model
 from timm.models.vision_transformer import _create_vision_transformer
 
-from segm.model.vit import VisionTransformer
+from segm.model.vit import VisionTransformer, DINOV2VisionTransformer, EVA02VisionTransformer
 from segm.model.utils import checkpoint_filter_fn
 from segm.model.decoder import DecoderLinear
 from segm.model.decoder import MaskTransformer, MultiMaskTransformer
 from segm.model.segmenter import Segmenter, MultiSegmenter
 import segm.utils.torch as ptu
 
+from apex.normalization import FusedLayerNorm
+
+# 添加多个键值对
+
+default_cfgs.update({
+    "dino_small_patch16_224": {"url": "https://dl.fbaipublicfiles.com/dino/dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth"},
+    "dinov2_small_patch16_224": {"url": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth"},
+    "eva02_small_patch16_224": {"url": "eva02_S_pt_in21k_p14.pt"},
+    "eva02_tiny_patch16_224": {"url": "eva02_T_pt_in21k_p14.pt"},  
+})
 
 @register_model
 def vit_base_patch8_384(pretrained=False, **kwargs):
@@ -64,14 +74,34 @@ def create_vit(model_cfg):
         model_cfg["image_size"][0],
         model_cfg["image_size"][1],
     )
-    model = VisionTransformer(**model_cfg)
+    if "dinov2" in backbone:
+        model = DINOV2VisionTransformer(**model_cfg)
+    elif "eva02" in backbone:
+        mlp_expansion_ratio = 4*2/3
+        model_cfg["d_ff"] = int(mlp_expansion_ratio * model_cfg["d_model"])
+        model_cfg["norm_layer"] = FusedLayerNorm
+        model = EVA02VisionTransformer(**model_cfg)
+    else:
+        model = VisionTransformer(**model_cfg)
+    
+    from torch.hub import get_dir
+    hub_dir = get_dir()
+    model_dir = os.path.join(hub_dir, 'checkpoints')
     if backbone == "vit_base_patch8_384":
-        path = os.path.expandvars("$TORCH_HOME/hub/checkpoints/vit_base_patch8_384.pth")
+        path = os.path.join(model_dir, "vit_base_patch8_384.pth")
         state_dict = torch.load(path, map_location="cpu")
         filtered_dict = checkpoint_filter_fn(state_dict, model)
         model.load_state_dict(filtered_dict, strict=True)
     elif "deit" in backbone:
         load_pretrained(model, default_cfg, filter_fn=checkpoint_filter_fn)
+    elif "dino" in backbone:
+        # without head
+        load_pretrained(model, default_cfg, filter_fn=checkpoint_filter_fn, strict=False)
+    elif "eva02" in backbone:
+        path = os.path.join(model_dir, default_cfg["url"])
+        state_dict = torch.load(path, map_location="cpu")
+        filtered_dict = checkpoint_filter_fn(state_dict, model)
+        model.load_state_dict(filtered_dict, strict=False)
     else:
         load_custom_pretrained(model, default_cfg)
 

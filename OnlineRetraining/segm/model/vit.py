@@ -7,13 +7,13 @@ import torch
 import torch.nn as nn
 
 from segm.model.utils import init_weights, resize_pos_embed
-from segm.model.blocks import Block
+from segm.model.blocks import Block, DINOBlock, EVA02Block
 
 from timm.models.layers import DropPath
 from timm.models.layers import trunc_normal_
 from timm.models.vision_transformer import _load_weights
 
-
+from segm.model.rope import *
 class PatchEmbedding(nn.Module):
     def __init__(self, image_size, patch_size, embed_dim, channels):
         super().__init__()
@@ -182,3 +182,86 @@ class VisionTransformer(nn.Module):
             else:
                 return blk(x, return_attention=True)
 
+
+class DINOV2VisionTransformer(VisionTransformer):
+    def __init__(
+        self,
+        image_size,
+        patch_size,
+        n_layers,
+        d_model,
+        d_ff,
+        n_heads,
+        n_cls,
+        dropout=0.1,
+        drop_path_rate=0.0,
+        distilled=False,
+        channels=3,
+        init_values: float = 1.0,
+    ):
+        super().__init__(
+            image_size,
+            patch_size,
+            n_layers,
+            d_model,
+            d_ff,
+            n_heads,
+            n_cls,
+            dropout,
+            drop_path_rate,
+            distilled,
+            channels,
+        )
+
+        # transformer blocks
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, n_layers)]
+        self.blocks = nn.ModuleList(
+            [DINOBlock(d_model, n_heads, d_ff, dropout, dpr[i], init_values) for i in range(n_layers)]
+        )
+
+class EVA02VisionTransformer(VisionTransformer):
+    def __init__(
+        self,
+        image_size,
+        patch_size,
+        n_layers,
+        d_model,
+        d_ff,
+        n_heads,
+        n_cls,
+        dropout=0.1,
+        drop_path_rate=0.0,
+        distilled=False,
+        channels=3,
+        init_values: float = 1.0,
+        intp_freq = True,
+        xattn=True,
+        norm_layer=nn.LayerNorm,
+    ):
+        super().__init__(
+            image_size,
+            patch_size,
+            n_layers,
+            d_model,
+            d_ff,
+            n_heads,
+            n_cls,
+            dropout,
+            drop_path_rate,
+            distilled,
+            channels,
+        )
+
+        # transformer blocks
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, n_layers)]
+        half_head_dim = d_model // n_heads // 2
+        hw_seq_len = image_size[0] // patch_size
+        self.rope = VisionRotaryEmbeddingFast(
+            dim=half_head_dim,
+            pt_seq_len=16,
+            ft_seq_len=hw_seq_len if intp_freq else None,
+        )
+        self.blocks = nn.ModuleList(
+            [EVA02Block(d_model, n_heads, d_ff, dropout, dpr[i], init_values, 
+                        rope=self.rope, norm_layer=norm_layer) for i in range(n_layers)]
+        )

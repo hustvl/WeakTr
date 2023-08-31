@@ -102,6 +102,50 @@ model:
     n_heads: 16
     n_layers: 24
     normalization: vit
+
+  # dino
+  dino_small_patch16_224:
+    image_size: 224
+    patch_size: 16
+    d_model: 384
+    n_heads: 6
+    n_layers: 12
+    normalization: deit
+    distilled: false
+  dinov2_small_patch16_224:
+    image_size: 224
+    patch_size: 16
+    d_model: 384
+    n_heads: 6
+    n_layers: 12
+    normalization: deit
+    distilled: false
+  dinov2_small_patch14_224:
+    image_size: 224
+    patch_size: 14
+    d_model: 384
+    n_heads: 6
+    n_layers: 12
+    normalization: deit
+    distilled: false
+  # eva
+  eva02_tiny_patch16_224:
+    image_size: 224
+    patch_size: 16
+    d_model: 192
+    n_heads: 3
+    n_layers: 12
+    normalization: eva02
+    distilled: false
+  # eva
+  eva02_small_patch16_224:
+    image_size: 224
+    patch_size: 16
+    d_model: 384
+    n_heads: 6
+    n_layers: 12
+    normalization: eva02
+    distilled: false
 decoder:
   linear: {}
   deeplab_dec:

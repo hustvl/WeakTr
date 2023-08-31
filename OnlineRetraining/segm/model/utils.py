@@ -34,7 +34,7 @@ def resize_pos_embed(posemb, grid_old_shape, grid_new_shape, num_extra_tokens):
 
     gs_h, gs_w = grid_new_shape
     posemb_grid = posemb_grid.reshape(1, gs_old_h, gs_old_w, -1).permute(0, 3, 1, 2)
-    posemb_grid = F.interpolate(posemb_grid, size=(gs_h, gs_w), mode="bilinear")
+    posemb_grid = F.interpolate(posemb_grid.cuda(), size=(gs_h, gs_w), mode="bilinear").cpu()
     posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, gs_h * gs_w, -1)
     posemb = torch.cat([posemb_tok, posemb_grid], dim=1)
     return posemb
@@ -46,10 +46,18 @@ def checkpoint_filter_fn(state_dict, model):
     if "model" in state_dict:
         # For deit models
         state_dict = state_dict["model"]
+    if "module" in state_dict:
+        state_dict = state_dict["module"]
     num_extra_tokens = 1 + ("dist_token" in state_dict.keys())
     patch_size = model.patch_size
     image_size = model.patch_embed.image_size
     for k, v in state_dict.items():
+        if k == "patch_embed.proj.weight":
+            v = F.interpolate(
+                v.float(),
+                size=(patch_size, patch_size),
+                mode="bicubic", align_corners=False,
+            )
         if k == "pos_embed" and v.shape != model.pos_embed.shape:
             # To resize pos embedding when using model at different size from pretrained weights
             v = resize_pos_embed(
@@ -58,6 +66,12 @@ def checkpoint_filter_fn(state_dict, model):
                 (image_size[0] // patch_size, image_size[1] // patch_size),
                 num_extra_tokens,
             )
+        if "rope.freqs_cos" in k and v.shape != model.rope.freqs_cos.shape:
+            print(f"Skipping loading {k} because of shape mismatch of {v.shape} vs {model.rope.freqs_cos.shape}")
+            continue
+        if "rope.freqs_sin" in k and v.shape != model.rope.freqs_sin.shape:
+            print(f"Skipping loading {k} because of shape mismatch of {v.shape} vs {model.rope.freqs_sin.shape}")
+            continue
         out_dict[k] = v
     return out_dict
 
