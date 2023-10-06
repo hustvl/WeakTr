@@ -170,7 +170,7 @@ colorful.py
 data/coco
 data/voc12
 mlruns/*
-*results/*
+*results*
 OnlineRetraining/mlruns
 OnlineRetraining/start*
 OnlineRetraining/seg*

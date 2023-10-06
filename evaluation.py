@@ -303,6 +303,7 @@ if __name__ == '__main__':
         args.data_path = Path(args.data_path) / "coco" if "coco" not in args.data_path else args.data_path
         args.gt_dir = args.data_path / "voc_format" / "class_labels"
         args.img_dir = args.data_path / "images"
+        args.cam_type="coco"
 
     if args.type == 'npy':
         assert args.t is not None or args.curve

@@ -59,7 +59,7 @@ Besides, we propose a ViT-based gradient clipping decoder for online retraining 
 |     Dataset     |     Method     | Backbone |                        Checkpoint                          |                          CAM_Label                           | Train mIoU |
 | :-------------: | :-------------: |  :-------------: |:----------------------------------------------------------: | :----------------------------------------------------------: | :--------: |
 | VOC12 | WeakTr | `DeiT-S` | [Google Drive](https://drive.google.com/file/d/1uUHGLIDFm49Gh41Ddc8_T93-bRWnJzeF/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/1zv3Wq056aHdUaaKEuychGnedXqkMLr5y/view?usp=share_link) |   **69.4%**    |
-| COCO14 |    WeakTr    | `DeiT-S` | [Google Drive](https://drive.google.com/file/d/1tFUDIQDXuD1f8MhWAza-jJP1hYeYhvSb/view?usp=share_link) | [Google Drive](https://drive.google.com/file/d/16_fRt5XfgzueEcmoRSFAHiI3rKUYz20r/view?usp=share_link) |   **41.9%**    |
+| COCO14 |    WeakTr    | `DeiT-S` | [Google Drive](https://drive.google.com/file/d/1Q5UdcGCHFitSJXljZmTA4USKPpyZIVDw/view?usp=drive_link) | [Google Drive](https://drive.google.com/file/d/1ifhVOZX4P9Ku7g66SWNXYyZgCIShQ42P/view?usp=drive_link) |   **42.6%**    |
 
 ### Step2: Online Retraining with Gradient Clipping Decoder
 

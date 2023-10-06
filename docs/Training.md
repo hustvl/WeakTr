@@ -5,7 +5,7 @@
 ### Pascal VOC 2012
 ```bash
 # Training
-CUDA_VISIBLE_DEVICES=2 python main.py  --model deit_small_WeakTr_patch16_224 \
+python main.py  --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12 \
                 --img-ms-list voc12/train_id.txt \
@@ -17,8 +17,7 @@ CUDA_VISIBLE_DEVICES=2 python main.py  --model deit_small_WeakTr_patch16_224 \
                 --weight-decay 0.03 \
 
 # Generate CAM
-CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --nproc_per_node=1 --master_port=14898 \
-main.py --model deit_small_WeakTr_patch16_224 \
+python main.py --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set VOC12MS \
                 --img-ms-list voc12/train_aug_id.txt \
@@ -38,16 +37,6 @@ python evaluation.py --list voc12/train_id.txt \
                      --start 40 \
 
 # CRF post-processing
-python evaluation.py --list voc12/train_id.txt \
-                     --data-path data \
-                     --type npy \
-                     --predict_dir WeakTr_results/WeakTr/attn-patchrefine-npy-ms \
-                     --out-dir WeakTr_results/WeakTr/pseudo-mask-ms-crf \
-                     --curve True \
-                     --out-crf \
-                     --start 40 \
-
-
 python evaluation.py --list voc12/train_aug_id.txt \
                      --data-path data \
                      --type npy \
@@ -67,9 +56,11 @@ python main.py  --model deit_small_WeakTr_patch16_224 \
                 --gt-dir voc_format/class_labels \
                 --cam-npy-dir WeakTr_results_coco/WeakTr/attn-patchrefine-npy \
                 --output_dir WeakTr_results_coco/WeakTr \
-                --lr 5e-4 \
-                
-# Generate CAM
+                --reduction 8 \
+                --pool-type max \
+                --lr 2e-4 \
+                --weight-decay 0.03 \
+
 python main.py --model deit_small_WeakTr_patch16_224 \
                 --data-path data \
                 --data-set COCOMS \
@@ -78,8 +69,10 @@ python main.py --model deit_small_WeakTr_patch16_224 \
                 --gen_attention_maps \
                 --cam-npy-dir WeakTr_results_coco/WeakTr/attn-patchrefine-npy-ms \
                 --output_dir WeakTr_results_coco/WeakTr \
+                --reduction 8 \
+                --pool-type max \
                 --resume WeakTr_results_coco/WeakTr/checkpoint_best_mIoU.pth
-                
+                     
 # CRF post-processing
 python evaluation.py --list coco/train_id.txt \
                      --data-path data \
@@ -87,6 +80,7 @@ python evaluation.py --list coco/train_id.txt \
                      --predict_dir WeakTr_results_coco/WeakTr/attn-patchrefine-npy-ms \
                      --out-dir WeakTr_results_coco/WeakTr/pseudo-mask-ms-crf \
                      --t 42 \
+                     --num_classes 91 \
                      --out-crf
 ```
 ## Phase 2: Online Retraining
