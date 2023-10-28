@@ -16,6 +16,14 @@ ArXiv Preprint ([arXiv 2304.01184](https://arxiv.org/abs/2304.01184))
 
 ## Highlight
 
+<div align="center">
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/weaktr-exploring-plain-vision-transformer-for/weakly-supervised-semantic-segmentation-on)](https://paperswithcode.com/sota/weakly-supervised-semantic-segmentation-on?p=weaktr-exploring-plain-vision-transformer-for)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/weaktr-exploring-plain-vision-transformer-for/weakly-supervised-semantic-segmentation-on-1)](https://paperswithcode.com/sota/weakly-supervised-semantic-segmentation-on-1?p=weaktr-exploring-plain-vision-transformer-for)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/weaktr-exploring-plain-vision-transformer-for/weakly-supervised-semantic-segmentation-on-14)](https://paperswithcode.com/sota/weakly-supervised-semantic-segmentation-on-14?p=weaktr-exploring-plain-vision-transformer-for)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/weaktr-exploring-plain-vision-transformer-for/weakly-supervised-semantic-segmentation-on-4)](https://paperswithcode.com/sota/weakly-supervised-semantic-segmentation-on-4?p=weaktr-exploring-plain-vision-transformer-for)
+
+</div>
 
 
 <div align=center><img src="img/miou_compare.png" width="400px"></div>
