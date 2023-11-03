@@ -41,15 +41,3 @@ rm -rf train${year}.zip
 rm -rf val${year}.zip
 
 echo "COCO data downloading over!!"
-
-cd ..
-echo "Downloading annotations"
-wget -c http://images.cocodataset.org/annotations/annotations_trainval${year}.zip
-unzip -q annotations_trainval${year}.zip
-rm -rf annotations_trainval${year}.zip
-echo "Done"
-
-cd ..
-
-python parse_coco.py --split train --year ${year} --to-voc12 false # support also year 2017
-python parse_coco.py --split val --year ${year} --to-voc12 false # support also year 2017

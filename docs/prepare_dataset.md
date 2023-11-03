@@ -35,7 +35,11 @@ WeakTr
 cd data
 sh download_and_convert_coco.sh
 cp ../coco/val_5000.txt coco/voc_format
+cp ../coco/val_id.txt coco/voc_format/val.txt
+cp ../coco/train_id.txt coco/voc_format/train.txt
 ```
+- Then download the COCO 2014 semantic segmentation labels from [here](https://drive.google.com/file/d/1JIvfoBwkxp2_DlEeszlXbe6L8qROjPSX/view?usp=drive_link)
+
 The folder structure is assumed to be:
 ```bash
 WeakTr
