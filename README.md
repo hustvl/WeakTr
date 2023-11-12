@@ -2,7 +2,7 @@
 <h1>WeakTr </h1>
 <h3>Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation</h3>
 
-[Lianghui Zhu](https://github.com/Unrealluver)<sup>1</sup> \*, [Yingyue Li](https://github.com/Yingyue-L)<sup>1</sup> \*, [Jiemin Fang](https://jaminfong.cn)<sup>1</sup>, [Xinggang Wang](https://scholar.google.com/citations?user=qNCTLV0AAAAJ&hl=zh-CN)<sup>1 :email:</sup>, Yan Liu<sup>2</sup>, Hao Xin<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu/)<sup>1</sup>
+[Lianghui Zhu](https://github.com/Unrealluver)<sup>1</sup> \*, [Yingyue Li](https://github.com/Yingyue-L)<sup>1</sup> \*, [Jiemin Fang](https://jaminfong.cn)<sup>1</sup>, Yan Liu<sup>2</sup>, Hao Xin<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu/)<sup>1</sup>, [Xinggang Wang](https://scholar.google.com/citations?user=qNCTLV0AAAAJ&hl=zh-CN)<sup>1 :email:</sup>
  
 <sup>1</sup> School of EIC, Huazhong University of Science & Technology, <sup>2</sup> Ant Group 
 
