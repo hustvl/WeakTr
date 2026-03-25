@@ -8,7 +8,7 @@
 
 (\*) equal contribution, (<sup>:email:</sup>) corresponding author.
 
-ArXiv Preprint ([arXiv 2304.01184](https://arxiv.org/abs/2304.01184))
+ArXiv Preprint ([arXiv 2304.01184](https://arxiv.org/abs/2304.01184)), Accepted by IEEE Transactions on Image Processing, TIP.
 
 
 </div>
