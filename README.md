@@ -84,11 +84,12 @@ Besides, we propose a ViT-based gradient clipping decoder for online retraining 
 ## Citation
 If you find this repository/work helpful in your research, welcome to cite the paper and give a ⭐. 
 ```
-@article{zhu2023weaktr,
-      title={WeakTr: Exploring Plain Vision Transformer for Weakly-supervised Semantic Segmentation}, 
-      author={Lianghui Zhu and Yingyue Li and Jiemin Fang and Yan Liu and Hao Xin and Wenyu Liu and Xinggang Wang},
-      year={2023},
-      journal={arxiv:2304.01184},
+@article{zhu2026weaktr,
+  title={Weaktr: Exploring plain vision transformer for weakly-supervised semantic segmentation},
+  author={Zhu, Lianghui and Li, Yingyue and Fang, Jiemin and Liu, Yan and Hao, Xin and Liu, Wenyu and Wang, Xinggang},
+  journal={IEEE Transactions on Image Processing},
+  year={2026},
+  publisher={IEEE}
 }
 ```
 
